@@ -30,7 +30,6 @@ files.map(async (file) => {
   app.use('/api', fs.default)
 })
 
-app.use((req, res) => res.status(404).send('Route does not exist'))
 app.disable('x-powered-by')
 
 /* --- Server --- */

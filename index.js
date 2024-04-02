@@ -36,6 +36,15 @@ app.disable('x-powered-by')
 /* --- Server --- */
 const port = process.env.PORT || 8000
 
-app.listen(port, () =>
-  console.log('Server running at http://localhost:%s', port)
-)
+const startApp = () => {
+  try {
+    app.listen(port, () => {
+      console.log('Server running at http://localhost:%s', port)
+    })
+  } catch (error) {
+    console.log(error)
+    process.exit(1)
+  }
+}
+
+startApp()

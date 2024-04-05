@@ -30,40 +30,66 @@ router.post('/register', async (req, res) => {
   }
 })
 
+router.get('/cookie/get', (req, res) => {
+  let u = req.cookies['username'] || ''
+  let p = req.cookies['password'] || ''
+  let s = req.cookies['save'] ? true : false
+  res.json({ username: u, password: p, save: s })
+})
+
 router.post('/login', async (req, res) => {
   try {
-    // check user
-    const { username, password } = req.body
+    let username = req.body.username || ''
+    let password = req.body.password || ''
 
-    let user = await User.findOneAndUpdate({ username }, { new: true })
+    // // Check if the user exists
+    let user = await User.findOne({ username })
 
-    if (user) {
-      const isMatch = bcrypt.compare(password, user.password)
-
-      if (!isMatch) {
-        return res.status(400).send('Password Invalid!!!')
-      }
-      // payload
-      let payload = {
-        user: {
-          username: user.username,
-          name: user.name,
-          email: user.email,
-          picture: user.picture,
-          role: user.role,
-        },
-      }
-      // generate toke
-      jwt.sign(payload, 'jwtsecret', { expiresIn: '1d' }, (error, token) => {
-        if (error) throw error
-        res.json({ token, payload })
-      })
-    } else {
+    if (!user) {
       return res.status(400).send('User Not Found!!!')
     }
+
+    // Compare passwords
+    const isMatch = await bcrypt.compare(password, user.password)
+
+    if (!isMatch) {
+      return res.status(400).send('Password Invalid!!!')
+    }
+
+    // Generate token
+    const payload = {
+      user: {
+        username: user.username,
+        name: user.name,
+        email: user.email,
+        picture: user.picture,
+        role: user.role,
+      },
+    }
+
+    jwt.sign(payload, 'jwtsecret', { expiresIn: '1d' }, (error, token) => {
+      if (error) throw error
+      if (req.body.save) {
+        let age = 60 * 60 * 1000 * 24 * 30 // 30 day
+        res.cookie('username', username, { maxAge: age })
+        res.cookie('password', password, { maxAge: age })
+        let save = req.body.save
+        res.cookie('save', save, { maxAge: age })
+        console.log('Saved to Cookies')
+
+        // ถ้าไม่ได้เลือกบันทึกข้อมูล แต่อาจมีข้อมูลเดิมเก็บเอาไว้
+        // ดังนั้น เราอาจลบข้อมูลเหล่านั้นออกไป (ถึงไม่มีก็ไม่เกิด Error)
+      } else {
+        res.clearCookie('username')
+        res.clearCookie('password')
+        res.clearCookie('save')
+        console.log('Not stored in cookies')
+      }
+      res.json({ token, payload })
+    })
   } catch (error) {
-    console.log({ message: error.message })
-    res.status(500)
+    console.log({ message: error })
+    res.status(500).send('Internal Server Error')
   }
 })
 

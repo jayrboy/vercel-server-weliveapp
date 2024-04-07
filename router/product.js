@@ -5,7 +5,6 @@ const router = express.Router()
 
 //*  http://localhost:8000/api/db
 
-
 router.post('/db/create', (req, res) => {
   let form = req.body
   let data = {
@@ -84,7 +83,7 @@ router.get('/db/search', (req, res) => {
 
   let options = {
     page: req.query.page || 1, //เพจปัจจุบัน
-    limit: 3, //แสดงผลหน้าละ 2 รายการ (ข้อมูลมีน้อย)
+    limit: 10, //แสดงผลหน้าละ 2 รายการ (ข้อมูลมีน้อย)
   }
 
   Product.paginate(conditions, options, (err, result) => {

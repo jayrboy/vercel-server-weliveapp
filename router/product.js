@@ -34,6 +34,13 @@ router.get('/db/read', (req, res) => {
     .then((docs) => res.json(docs))
 })
 
+router.get('/db/read/:id', (req, res) => {
+  let id = req.params.id
+  Product.findById(id)
+    .exec()
+    .then((docs) => res.json(docs))
+})
+
 router.post('/db/update', (req, res) => {
   let form = req.body
   let data = {

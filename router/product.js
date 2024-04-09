@@ -11,12 +11,14 @@ router.post('/db/create', (req, res) => {
     itemid: form.itemid || '',
     name: form.name || '',
     price: form.price || 0,
-    detail: form.detail || '',
     cost: form.cost || 0,
     stock: form.stock || 0,
     over_stock: form.over_stock || 0,
-    date_added: new Date(Date.parse(form.date_added)) || new Date(),
   }
+
+  data.date_added = !isNaN(Date.parse(form.date_added))
+    ? new Date(form.date_added)
+    : new Date()
 
   Product.create(data)
     .then((docs) => {
@@ -24,7 +26,8 @@ router.post('/db/create', (req, res) => {
       res.send(true)
     })
     .catch((err) => {
-      console.log(err.message).send(false)
+      console.log(err.message)
+      res.send(false)
     })
 })
 
@@ -42,12 +45,12 @@ router.get('/db/read/:id', (req, res) => {
 })
 
 router.post('/db/update', (req, res) => {
+  console.log(req.body)
   let form = req.body
   let data = {
     itemid: form.itemid || '',
     name: form.name || '',
     price: form.price || 0,
-    detail: form.detail || '',
     cost: form.cost || 0,
     stock: form.stock || 0,
     over_stock: form.over_stock || 0,

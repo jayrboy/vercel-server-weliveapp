@@ -11,17 +11,29 @@ mongoose
 
 //* Product Model
 let productSchema = new mongoose.Schema({
-  code: String,
+  code: { type: String, lowercase: true },
   name: String,
   price: Number,
   cost: Number,
   stock: Number,
+  limit: Number,
+  cf: Number,
   remaining_cf: Number,
+  paid: Number,
   remaining: Number,
   date_added: Date,
 })
 productSchema.plugin(paginate) //สำหรับแบ่งเพจ
 let Product = mongoose.model('Product', productSchema)
+
+//* Daily Stock
+let dailyStockSchema = new mongoose.Schema({
+  date_added: Date,
+  status: { type: String, enum: ['new', 'clear'], default: 'new' },
+  chanel: { type: String, default: 'facebook' },
+  products: Array,
+})
+let DailyStock = mongoose.model('DailyStock', dailyStockSchema)
 
 //* Express Model
 let expressSchema = new mongoose.Schema({
@@ -60,4 +72,4 @@ const commentSchema = new mongoose.Schema({
 })
 const Comment = mongoose.model('Comment', commentSchema)
 
-export { Product, Comment, User, ExpressModel }
+export { Product, DailyStock, Comment, User, ExpressModel }

@@ -16,7 +16,10 @@ router.post('/db/create', (req, res) => {
     price: form.price || 0,
     cost: form.cost || 0,
     stock: form.stock || 0,
+    limit: form.limit || 0,
+    cf: form.cf || 0,
     remaining_cf: form.remaining_cf || 0,
+    paid: form.paid || 0,
     remaining: form.stock || 0,
   }
   data.date_added = !isNaN(Date.parse(form.date_added))
@@ -57,6 +60,7 @@ router.post('/db/update', (req, res) => {
     price: form.price || 0,
     cost: form.cost || 0,
     stock: form.stock || 0,
+    limit: form.limit || 0,
     date_added: new Date(Date.parse(form.date_added)) || new Date(),
   }
 

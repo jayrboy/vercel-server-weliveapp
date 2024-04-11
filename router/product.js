@@ -3,26 +3,30 @@ import { Product } from '../models.js'
 
 const router = express.Router()
 
-//*  http://localhost:8000/api/db
+/*  
+ http://localhost:8000/api/db
+ https://vercel-server-weliveapp.vercel.app/api/db 
+*/
 
 router.post('/db/create', (req, res) => {
   let form = req.body
   let data = {
-    itemid: form.itemid || '',
+    code: form.code || '',
     name: form.name || '',
     price: form.price || 0,
     cost: form.cost || 0,
     stock: form.stock || 0,
-    over_stock: form.over_stock || 0,
+    remaining_cf: form.remaining_cf || 0,
+    remaining: form.stock || 0,
   }
-
   data.date_added = !isNaN(Date.parse(form.date_added))
     ? new Date(form.date_added)
     : new Date()
+  // console.log(data)
 
   Product.create(data)
     .then((docs) => {
-      console.log('Document saved')
+      console.log('Document saved', docs)
       res.send(true)
     })
     .catch((err) => {
@@ -45,24 +49,30 @@ router.get('/db/read/:id', (req, res) => {
 })
 
 router.post('/db/update', (req, res) => {
-  console.log(req.body)
+  // console.log(req.body)
   let form = req.body
   let data = {
-    itemid: form.itemid || '',
+    code: form.code || '',
     name: form.name || '',
     price: form.price || 0,
     cost: form.cost || 0,
     stock: form.stock || 0,
-    over_stock: form.over_stock || 0,
-    date_added: new Date(Date.parse(form.date_added)) || new Date(),
   }
+  data.date_added = !isNaN(Date.parse(form.date_added))
+    ? new Date(form.date_added)
+    : new Date()
+
+  // console.log(data)
   Product.findByIdAndUpdate(form._id, data, { useFindAndModify: false })
     .exec()
     .then(() => {
       //หลังการอัปเดต ก็อ่านข้อมูลอีกครั้ง แล้วส่งไปแสดงผลที่ฝั่งโลคอลแทนข้อมูลเดิม
       Product.find()
         .exec()
-        .then((docs) => res.json(docs))
+        .then((docs) => {
+          console.log('Document updated', docs)
+          res.json(docs)
+        })
     })
     .catch((err) => res.json({ message: err.message }))
 })
@@ -77,7 +87,7 @@ router.post('/db/delete', (req, res) => {
         .exec()
         .then((docs) => res.json(docs))
     })
-    .catch((err) => res.json({ message: err.message }))
+    .catch((err) => res.json({ message: err }))
 })
 
 router.get('/db/search', (req, res) => {
@@ -93,7 +103,7 @@ router.get('/db/search', (req, res) => {
 
   let options = {
     page: req.query.page || 1, //เพจปัจจุบัน
-    limit: 10, //แสดงผลหน้าละ 2 รายการ (ข้อมูลมีน้อย)
+    limit: 5, //แสดงผลหน้าละ 5 รายการ (ข้อมูลมีน้อย)
   }
 
   Product.paginate(conditions, options, (err, result) => {

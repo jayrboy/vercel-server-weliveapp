@@ -57,10 +57,8 @@ router.post('/db/update', (req, res) => {
     price: form.price || 0,
     cost: form.cost || 0,
     stock: form.stock || 0,
+    date_added: new Date(Date.parse(form.date_added)) || new Date(),
   }
-  data.date_added = !isNaN(Date.parse(form.date_added))
-    ? new Date(form.date_added)
-    : new Date()
 
   // console.log(data)
   Product.findByIdAndUpdate(form._id, data, { useFindAndModify: false })

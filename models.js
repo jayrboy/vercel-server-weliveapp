@@ -9,43 +9,6 @@ mongoose
   })
   .catch((e) => console.log({ message: 'Failed connection: ' + e }))
 
-//* Product Model
-let productSchema = new mongoose.Schema({
-  code: { type: String, lowercase: true },
-  name: String,
-  price: Number,
-  cost: Number,
-  stock: Number,
-  limit: Number,
-  cf: Number,
-  remaining_cf: Number,
-  paid: Number,
-  remaining: Number,
-  date_added: Date,
-})
-productSchema.plugin(paginate) //สำหรับแบ่งเพจ
-let Product = mongoose.model('Product', productSchema)
-
-//* Daily Stock
-let dailyStockSchema = new mongoose.Schema({
-  date_added: Date,
-  status: { type: String, enum: ['new', 'clear'], default: 'new' },
-  chanel: { type: String, default: 'facebook' },
-  products: Array,
-})
-let DailyStock = mongoose.model('DailyStock', dailyStockSchema)
-
-//* Express Model
-let expressSchema = new mongoose.Schema({
-  exname: String,
-  fprice: Number,
-  sprice: Number,
-  maxprice: Number,
-  whenfprice: Number,
-  date_start: Date,
-})
-let ExpressModel = mongoose.model('ExpressModel', expressSchema)
-
 //* User Model
 const userSchema = mongoose.Schema(
   {
@@ -63,13 +26,51 @@ const userSchema = mongoose.Schema(
 )
 const User = mongoose.model('User', userSchema)
 
-//* Comment Model
-const commentSchema = new mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // รหัสไอดีผู้ใช้ที่แสดงความคิดเห็น
-  productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' }, // รหัสสินค้าที่ความคิดเห็นเกี่ยวข้อง
-  content: { type: String }, // เนื้อหาความคิดเห็น
-  createdAt: { type: Date, default: Date.now }, // วันที่และเวลาที่ความคิดเห็นถูกสร้าง
+//* Product Model
+let productSchema = new mongoose.Schema({
+  code: { type: String, lowercase: true },
+  name: String,
+  stock: Number,
+  limit: Number,
+  price: Number,
+  cost: Number,
+  cf: Number,
+  remaining_cf: Number,
+  paid: Number,
+  remaining: Number,
+  date_added: Date,
 })
-const Comment = mongoose.model('Comment', commentSchema)
+productSchema.plugin(paginate) //สำหรับแบ่งเพจ
+let Product = mongoose.model('Product', productSchema)
 
-export { Product, DailyStock, Comment, User, ExpressModel }
+//* Daily Stock
+let dailyStockSchema = new mongoose.Schema({
+  status: { type: String, enum: ['new', 'clear'], default: 'new' },
+  chanel: { type: String, default: 'facebook' },
+  products: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product' }],
+  price_total: Number,
+  date_added: Date,
+})
+let DailyStock = mongoose.model('DailyStock', dailyStockSchema)
+
+//* Sale Order (Comment)
+const orderSchema = new mongoose.Schema({
+  customer: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // รหัสไอดีลูกค้าที่แสดงความคิดเห็น
+  orders: [{ type: mongoose.Schema.Types.ObjectId, ref: 'DailyStock' }], // รหัสสินค้าที่ความคิดเห็นเกี่ยวข้อง
+  address: Array,
+  date_added: Date,
+})
+const Order = mongoose.model('Order', orderSchema)
+
+//* Express Model
+let expressSchema = new mongoose.Schema({
+  exname: String,
+  fprice: Number,
+  sprice: Number,
+  maxprice: Number,
+  whenfprice: Number,
+  date_start: Date,
+})
+let ExpressModel = mongoose.model('ExpressModel', expressSchema)
+
+export { Product, User, DailyStock, Order, ExpressModel }

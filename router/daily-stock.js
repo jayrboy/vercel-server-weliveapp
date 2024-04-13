@@ -8,17 +8,25 @@ router.post('/daily/create', (req, res) => {
   let data = {
     status: form.status || 'new',
     chanel: form.chanel || 'facebook',
-    // เพิ่ม ObjectId ของสินค้าลงในฟิลด์ products
     products: form.products || [],
     price_total: form.price_total || 0,
-    date_added: new Date(),
   }
 
-  console.log(data)
+  data.date_added = !isNaN(Date.parse(form.date_added))
+    ? new Date(form.date_added)
+    : new Date()
 
-  //   DailyStock.save(data)
-  //     .then((docs) => console.log('Document saved new daily stock:', docs))
-  //     .catch((err) => console.log('Error saving daily stock:', err))
+  // console.log(data)
+
+  DailyStock.create(data)
+    .then((docs) => {
+      console.log('Document saved new daily stock:', docs)
+      res.send(true)
+    })
+    .catch((err) => {
+      console.log('Error saving daily stock:', err)
+      res.send(false)
+    })
 })
 
 router.get('/daily/read', (req, res) => {

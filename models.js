@@ -47,7 +47,7 @@ let Product = mongoose.model('Product', productSchema)
 let dailyStockSchema = new mongoose.Schema({
   status: { type: String, enum: ['new', 'clear'], default: 'new' },
   chanel: { type: String, default: 'facebook' },
-  products: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product' }],
+  products: Array,
   price_total: Number,
   date_added: Date,
 })

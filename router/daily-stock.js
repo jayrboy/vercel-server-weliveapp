@@ -64,45 +64,60 @@ router.get('/daily/read/product/:id', async (req, res) => {
   }
 })
 
-router.post('/daily/update', (req, res) => {
-  // console.log(req.body)
-  let form = req.body
-  let data = {
-    code: form.code || '',
-    name: form.name || '',
-    price: form.price || 0,
-    cost: form.cost || 0,
-    stock: form.stock || 0,
-    limit: form.limit || 0,
-    date_added: new Date(Date.parse(form.date_added)) || new Date(),
-  }
+router.post('/daily/update', async (req, res) => {
+  const form = req.body
+  try {
+    const data = {
+      _id: form._id,
+      code: form.code || '',
+      name: form.name || '',
+      price: form.price || 0,
+      cost: form.cost || 0,
+      stock: form.stock || 0,
+      limit: form.limit || 0,
+      cf: form.cf || 0,
+      remaining_cf: form.remaining_cf || 0,
+      paid: form.paid || 0,
+      remaining: (form.stock || 0) - (form.paid || 0),
+      date_added: form.date_added ? new Date(form.date_added) : new Date(),
+    }
+    console.log(data)
 
-  // console.log(data)
-  DailyStock.findByIdAndUpdate(form._id, data, { useFindAndModify: false })
-    .exec()
-    .then(() => {
-      //หลังการอัปเดต ก็อ่านข้อมูลอีกครั้ง แล้วส่งไปแสดงผลที่ฝั่งโลคอลแทนข้อมูลเดิม
-      DailyStock.find()
-        .exec()
-        .then((docs) => {
-          console.log('Document updated', docs)
-          res.json(docs)
-        })
-    })
-    .catch((err) => res.json({ message: err.message }))
+    const dailyStock = await DailyStock.findOneAndUpdate(
+      { 'products._id': form._id }, // เงื่อนไขในการค้นหา DailyStock ที่มีสินค้าที่ต้องการอัปเดต
+      { $set: { 'products.$': data } },
+      { new: true } // ตั้งค่าเพื่อให้คืนค่า DailyStock หลังจากการอัปเดต
+    )
+
+    if (!dailyStock) {
+      return res
+        .status(404)
+        .json({ error: 'ไม่พบข้อมูล DailyStock ที่มีสินค้าที่ต้องการอัปเดต' })
+    }
+
+    res.json(dailyStock.products) // ส่งข้อมูล DailyStock ที่อัปเดตแล้วกลับไป
+  } catch (error) {
+    console.log('Error updating product:', error)
+    res.status(500).json({ error: 'เกิดข้อผิดพลาดในการอัปเดตข้อมูลสินค้า' })
+  }
 })
 
-router.post('/daily/delete', (req, res) => {
-  let _id = req.body._id
+router.post('/daily/delete/:id', async (req, res) => {
+  let id = req.params.id
+  console.log(id)
 
-  DailyStock.findByIdAndDelete(_id, { useFindAndModify: false })
-    .exec()
-    .then(() => {
-      DailyStock.find()
-        .exec()
-        .then((docs) => res.json(docs))
-    })
-    .catch((err) => res.json({ message: err }))
+  try {
+    const deletedProduct = await DailyStock.deleteOne({ 'products._id': id })
+
+    if (deletedProduct.deletedCount === 0) {
+      return res.status(404).json({ error: 'ไม่พบสินค้าที่ต้องการลบ' })
+    }
+
+    res.json({ message: 'ลบข้อมูลสินค้าเรียบร้อย' })
+  } catch (error) {
+    console.log('Error deleting product:', error)
+    res.status(500).json({ error: 'เกิดข้อผิดพลาดในการลบข้อมูลสินค้า' })
+  }
 })
 
 export default router

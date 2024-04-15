@@ -42,6 +42,28 @@ router.get('/daily/read/:id', (req, res) => {
     .then((docs) => res.json(docs))
 })
 
+router.get('/daily/read/product/:id', async (req, res) => {
+  const id = req.params.id
+  try {
+    const dailyStock = await DailyStock.findOne({ 'products._id': id }) // ค้นหา dailyStock ที่มี id ย่อยของสินค้าตรงกับ id ที่ระบุ
+    if (!dailyStock) {
+      return res
+        .status(404)
+        .json({ error: 'ไม่พบข้อมูล DailyStock ที่มีสินค้าที่มี ID ที่ระบุ' })
+    }
+    const product = dailyStock.products.find((product) => product._id == id) // ค้นหาสินค้าด้วย id ในฟิลด์ products
+    if (!product) {
+      return res
+        .status(404)
+        .json({ error: 'ไม่พบสินค้าที่มี ID ที่ระบุใน DailyStock' })
+    }
+    res.json(product) // ส่งข้อมูลสินค้ากลับไป
+  } catch (error) {
+    console.log('Error retrieving product:', error)
+    res.status(500).json({ error: 'เกิดข้อผิดพลาดในการดึงข้อมูลสินค้า' })
+  }
+})
+
 router.post('/daily/update', (req, res) => {
   // console.log(req.body)
   let form = req.body

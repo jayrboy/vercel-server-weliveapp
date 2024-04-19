@@ -133,11 +133,13 @@ router.post('/current-user', auth, (req, res) => {
   User.findOne({ username: req.user.username })
     .select('-password')
     .exec()
-    .then((docs) => res.send(docs))
-    .catch((err) => {
-      console.log({ message: err })
-      res.status(500).send('Server Error')
+    .then((user) => {
+      if (!user) {
+        return res.status(404).send({ message: 'User not found' })
+      }
+      res.send(user)
     })
+    .catch((err) => res.status(500).send('Server Error'))
 })
 
 router.post('/current-admin', auth, adminCheck, (req, res) => {

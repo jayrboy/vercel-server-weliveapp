@@ -87,25 +87,31 @@ router.post('/daily/update', async (req, res) => {
         ? new Date(Date.parse(form.date_added))
         : new Date(),
     }
-    // console.log(data)
 
     const dailyStock = await DailyStock.findOneAndUpdate(
-      { 'products._id': form._id }, // เงื่อนไขในการค้นหา DailyStock ที่มีสินค้าที่ต้องการอัปเดต
+      { 'products._id': form._id },
       { $set: { 'products.$': data } },
-      { new: true } // ตั้งค่าเพื่อให้คืนค่า DailyStock หลังจากการอัปเดต
+      { new: true }
     )
-
-    if (!dailyStock) {
-      return res
-        .status(404)
-        .json({ error: 'ไม่พบข้อมูล DailyStock ที่มีสินค้าที่ต้องการอัปเดต' })
-    }
-
     res.json(dailyStock.products) // ส่งข้อมูล DailyStock ที่อัปเดตแล้วกลับไป
   } catch (error) {
     console.log('Error updating product:', error)
     res.status(500).json({ error: 'เกิดข้อผิดพลาดในการอัปเดตข้อมูลสินค้า' })
   }
+})
+
+router.post('/daily/update/total', (req, res) => {
+  const { id, total } = req.body
+
+  DailyStock.findByIdAndUpdate(id, { price_total: total }, { new: true })
+    .then((docs) => {
+      // console.log(docs)
+      res.json(docs)
+    })
+    .catch((err) => {
+      console.error('Error updating DailyStock:')
+      res.status(500).json({ error: 'เกิดข้อผิดพลาดในการอัปเดตข้อมูล' })
+    })
 })
 
 router.delete('/daily/delete/product/:id', async (req, res) => {

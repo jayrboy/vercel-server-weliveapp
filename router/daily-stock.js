@@ -6,33 +6,37 @@ const router = express.Router()
 router.post('/daily/create', (req, res) => {
   let form = req.body
   let data = {
-    status: form.status || 'new',
-    chanel: form.chanel || 'facebook',
+    status: form.status || 'New',
+    chanel: form.chanel || 'Facebook',
     products: form.products || [],
     price_total: form.price_total || 0,
+    date_added: form.date_added
+      ? new Date(Date.parse(form.date_added))
+      : new Date(),
   }
-
-  data.date_added = !isNaN(Date.parse(form.date_added))
-    ? new Date(form.date_added)
-    : new Date()
 
   // console.log(data)
 
   DailyStock.create(data)
     .then((docs) => {
-      console.log('Document saved new daily stock:', docs)
+      console.log('document saved new daily stock')
       res.send(true)
     })
     .catch((err) => {
-      console.log('Error saving daily stock:', err)
+      console.log('error saving daily stock:', err)
       res.send(false)
     })
 })
 
 router.get('/daily/read', (req, res) => {
   DailyStock.find()
+    .sort({ date_added: -1 }) // เรียงข้อมูลตามวันที่เพิ่มข้อมูลล่าสุดก่อน
     .exec()
     .then((docs) => res.json(docs))
+    .catch((err) => {
+      console.error('Error reading daily stocks:', err)
+      res.status(500).send(false)
+    })
 })
 
 router.get('/daily/read/:id', (req, res) => {
@@ -79,9 +83,11 @@ router.post('/daily/update', async (req, res) => {
       remaining_cf: form.remaining_cf || 0,
       paid: form.paid || 0,
       remaining: (form.stock || 0) - (form.paid || 0),
-      date_added: form.date_added ? new Date(form.date_added) : new Date(),
+      date_added: form.date_added
+        ? new Date(Date.parse(form.date_added))
+        : new Date(),
     }
-    console.log(data)
+    // console.log(data)
 
     const dailyStock = await DailyStock.findOneAndUpdate(
       { 'products._id': form._id }, // เงื่อนไขในการค้นหา DailyStock ที่มีสินค้าที่ต้องการอัปเดต
@@ -102,21 +108,22 @@ router.post('/daily/update', async (req, res) => {
   }
 })
 
-router.post('/daily/delete/:id', async (req, res) => {
-  let id = req.params.id
-  console.log(id)
-
+router.delete('/daily/delete/product/:id', async (req, res) => {
   try {
-    const deletedProduct = await DailyStock.deleteOne({ 'products._id': id })
+    const productId = req.params.id
+    const deletedProduct = await DailyStock.updateOne(
+      {},
+      { $pull: { products: { _id: productId } } }
+    )
 
-    if (deletedProduct.deletedCount === 0) {
-      return res.status(404).json({ error: 'ไม่พบสินค้าที่ต้องการลบ' })
+    if (deletedProduct.nModified === 0) {
+      return res.status(404).send('ไม่พบสินค้าที่ต้องการลบ')
     }
 
-    res.json({ message: 'ลบข้อมูลสินค้าเรียบร้อย' })
+    res.send('ลบข้อมูลสินค้าเรียบร้อย')
   } catch (error) {
-    console.log('Error deleting product:', error)
-    res.status(500).json({ error: 'เกิดข้อผิดพลาดในการลบข้อมูลสินค้า' })
+    console.log('Error deleting product:')
+    res.status(500).send('เกิดข้อผิดพลาดในการลบข้อมูลสินค้า')
   }
 })
 

@@ -29,7 +29,7 @@ router.post('/db/create', (req, res) => {
 
   Product.create(data)
     .then((docs) => {
-      console.log('Document saved', docs)
+      console.log('Document saved')
       res.send(true)
     })
     .catch((err) => {
@@ -72,7 +72,7 @@ router.post('/db/update', (req, res) => {
       Product.find()
         .exec()
         .then((docs) => {
-          console.log('Document updated', docs)
+          console.log('Document updated')
           res.json(docs)
         })
     })
@@ -90,6 +90,21 @@ router.post('/db/delete', (req, res) => {
         .then((docs) => res.json(docs))
     })
     .catch((err) => res.json({ message: err }))
+})
+
+//สำหรับลบใน product ตอน create daily stock
+router.delete('/db/delete/:id', (req, res) => {
+  let _id = req.params.id
+
+  Product.findByIdAndDelete(_id, { useFindAndModify: false })
+    .exec()
+    .then(() => {
+      // เมื่อลบข้อมูลสำเร็จ ทำการค้นหาข้อมูลสินค้าทั้งหมดใหม่
+      Product.find()
+        .exec()
+        .then((docs) => res.json(docs))
+    })
+    .catch((err) => res.status(500).json({ message: err }))
 })
 
 router.get('/db/search', (req, res) => {

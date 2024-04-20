@@ -26,9 +26,9 @@ const userSchema = mongoose.Schema(
 )
 const User = mongoose.model('User', userSchema)
 
-//* Product Model
+/* ------------------------------------- Product ------------------------------------- */
 let productSchema = new mongoose.Schema({
-  code: { type: String, lowercase: true },
+  code: String,
   name: String,
   stock: Number,
   limit: Number,
@@ -43,10 +43,10 @@ let productSchema = new mongoose.Schema({
 productSchema.plugin(paginate) //สำหรับแบ่งเพจ
 let Product = mongoose.model('Product', productSchema)
 
-//* Daily Stock
+/* ----------------------------------- Daily Stock ----------------------------------- */
 let dailyStockSchema = new mongoose.Schema({
-  status: { type: String, enum: ['new', 'clear'], default: 'new' },
-  chanel: { type: String, default: 'facebook' },
+  status: String,
+  chanel: String,
   products: Array,
   price_total: Number,
   date_added: Date,

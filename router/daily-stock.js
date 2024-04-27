@@ -64,6 +64,17 @@ router.get('/daily/read/:id/product/:idproduct', async (req, res) => {
   }
 })
 
+router.get('/daily/new-status', (req, res) => {
+  DailyStock.findOne({ status: 'new' }) // ค้นหาเอกสารที่มี status เป็น 'new'
+    .sort({ date_added: -1 }) // เรียงลำดับตามวันที่เพิ่มข้อมูลในลำดับล่าสุดก่อน
+    .exec()
+    .then((doc) => res.json(doc))
+    .catch((err) => {
+      console.error('Error reading latest daily stocks:', err)
+      res.status(500).send(false)
+    })
+})
+
 router.post('/daily/update', (req, res) => {
   const form = req.body
   const idDaily = req.body.idDaily

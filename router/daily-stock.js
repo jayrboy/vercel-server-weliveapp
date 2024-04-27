@@ -46,58 +46,75 @@ router.get('/daily/read/:id', (req, res) => {
     .then((docs) => res.json(docs))
 })
 
-router.get('/daily/read/product/:id', async (req, res) => {
-  const id = req.params.id
+router.get('/daily/read/:id/product/:idproduct', async (req, res) => {
+  // console.log(req.params)
+  const dailyStockId = req.params.id
+  const productId = req.params.idproduct
   try {
-    const dailyStock = await DailyStock.findOne({ 'products._id': id }) // ค้นหา dailyStock ที่มี id ย่อยของสินค้าตรงกับ id ที่ระบุ
-    if (!dailyStock) {
-      return res
-        .status(404)
-        .json({ error: 'ไม่พบข้อมูล DailyStock ที่มีสินค้าที่มี ID ที่ระบุ' })
-    }
-    const product = dailyStock.products.find((product) => product._id == id) // ค้นหาสินค้าด้วย id ในฟิลด์ products
-    if (!product) {
-      return res
-        .status(404)
-        .json({ error: 'ไม่พบสินค้าที่มี ID ที่ระบุใน DailyStock' })
-    }
-    res.json(product) // ส่งข้อมูลสินค้ากลับไป
+    const dailyStock = await DailyStock.findOne({
+      _id: dailyStockId,
+      'products._id': productId,
+    })
+    const product = dailyStock.products.find((p) => p._id == productId)
+
+    res.json(product)
   } catch (error) {
     console.log('Error retrieving product:', error)
     res.status(500).json({ error: 'เกิดข้อผิดพลาดในการดึงข้อมูลสินค้า' })
   }
 })
 
-router.post('/daily/update', async (req, res) => {
+router.post('/daily/update', (req, res) => {
   const form = req.body
-  try {
-    const data = {
-      _id: form._id,
-      code: form.code || '',
-      name: form.name || '',
-      price: form.price || 0,
-      cost: form.cost || 0,
-      stock: form.stock || 0,
-      limit: form.limit || 0,
-      cf: form.cf || 0,
-      remaining_cf: form.remaining_cf || 0,
-      paid: form.paid || 0,
-      remaining: (form.stock || 0) - (form.paid || 0),
-      date_added: form.date_added
-        ? new Date(Date.parse(form.date_added))
-        : new Date(),
-    }
+  const idDaily = req.body.idDaily
+  const idProduct = req.body.idProduct
 
-    const dailyStock = await DailyStock.findOneAndUpdate(
-      { 'products._id': form._id },
-      { $set: { 'products.$': data } },
-      { new: true }
-    )
-    res.json(dailyStock.products) // ส่งข้อมูล DailyStock ที่อัปเดตแล้วกลับไป
-  } catch (error) {
-    console.log('Error updating product:', error)
-    res.status(500).json({ error: 'เกิดข้อผิดพลาดในการอัปเดตข้อมูลสินค้า' })
+  const data = {
+    code: form.code || '',
+    name: form.name || '',
+    price: form.price || 0,
+    cost: form.cost || 0,
+    stock: form.stock || 0,
+    limit: form.limit || 0,
+    cf: form.cf || 0,
+    remaining_cf: form.remaining_cf || 0,
+    paid: form.paid || 0,
+    remaining: (form.stock || 0) - (form.paid || 0),
+    date_added: form.date_added
+      ? new Date(Date.parse(form.date_added))
+      : new Date(),
   }
+
+  // อัปเดตข้อมูล products ภายใน DailyStock
+  DailyStock.findOneAndUpdate(
+    {
+      _id: idDaily, // เงื่อนไขการค้นหาเอกสาร DailyStock ด้วย _id
+      'products._id': idProduct, // เงื่อนไขการค้นหาสินค้าภายใน products ด้วย _id ของสินค้า
+    },
+    {
+      $set: {
+        'products.$.code': data.code,
+        'products.$.name': data.name,
+        'products.$.price': data.price,
+        'products.$.cost': data.cost,
+        'products.$.stock': data.stock,
+        'products.$.limit': data.limit,
+        'products.$.cf': data.cf,
+        'products.$.remaining_cf': data.remaining_cf,
+        'products.$.paid': data.paid,
+        'products.$.remaining': data.stock - data.paid,
+        'products.$.date_added': data.date_added,
+      },
+    },
+    { new: true } // ตัวเลือกเพื่อให้คืนค่าเอกสารหลังจากการอัปเดต
+  )
+    .then((docs) => {
+      console.log('daily stock updated')
+      res.json(docs)
+    })
+    .catch((err) => {
+      res.json({ error: 'เกิดข้อผิดพลาดในการอัปเดตข้อมูล DailyStock' })
+    })
 })
 
 router.post('/daily/update/total', (req, res) => {

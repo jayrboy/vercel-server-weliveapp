@@ -150,4 +150,26 @@ router.delete('/daily/delete/product/:id', (req, res) => {
     })
 })
 
+router.post('/daily/change-role', (req, res) => {
+  // console.log(req.body)
+  const id = req.body.id
+  const newStatus = req.body.status
+
+  DailyStock.findByIdAndUpdate(
+    id,
+    { status: newStatus },
+    { useFindAndModify: false }
+  )
+    .exec()
+    .then((docs) => {
+      // console.log(docs)
+      if (!docs) {
+        res.send('อัปเดตไม่สำเร็จ')
+      } else {
+        res.send('อัปเดตสำเร็จ')
+      }
+    })
+    .catch((err) => res.send('เกิดข้อผิดพลาด ไม่สามารถแก้ไขได้'))
+})
+
 export default router

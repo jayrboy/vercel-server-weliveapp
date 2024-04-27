@@ -131,23 +131,23 @@ router.post('/daily/update/total', (req, res) => {
     })
 })
 
-router.delete('/daily/delete/product/:id', async (req, res) => {
-  try {
-    const productId = req.params.id
-    const deletedProduct = await DailyStock.updateOne(
-      {},
-      { $pull: { products: { _id: productId } } }
-    )
+router.delete('/daily/delete/product/:id', (req, res) => {
+  const productId = req.params.id
+  // console.log(productId)
 
-    if (deletedProduct.nModified === 0) {
-      return res.status(404).send('ไม่พบสินค้าที่ต้องการลบ')
-    }
-
-    res.send('ลบข้อมูลสินค้าเรียบร้อย')
-  } catch (error) {
-    console.log('Error deleting product:')
-    res.status(500).send('เกิดข้อผิดพลาดในการลบข้อมูลสินค้า')
-  }
+  DailyStock.updateOne({}, { $pull: { products: { _id: productId } } })
+    .exec()
+    .then((result) => {
+      if (result.nModified > 0) {
+        res.send('ลบข้อมูลสินค้าเรียบร้อย')
+      } else {
+        res.send('ไม่พบสินค้าที่ต้องการลบ')
+      }
+    })
+    .catch((err) => {
+      console.log('เกิดข้อผิดพลาดในการลบข้อมูลสินค้า:', err)
+      res.send('เกิดข้อผิดพลาดในการลบข้อมูลสินค้า')
+    })
 })
 
 export default router

@@ -34,7 +34,7 @@ app.get('/', (req, res) => {
   )
 })
 
-// app.use('/webhooks', webhooks)
+app.use('/webhooks', webhooks)
 
 const files = readdirSync('./router')
 files.map(async (file) => {

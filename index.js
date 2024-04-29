@@ -4,13 +4,13 @@ import os from 'os'
 import { readdirSync } from 'fs'
 import morgan from 'morgan'
 import cors from 'cors'
-import xhub from 'express-x-hub'
+// import xhub from 'express-x-hub'
 import cookieParser from 'cookie-parser'
 
 import swaggerUi from 'swagger-ui-express'
 import { swaggerSpec } from './swaggerConfig.js'
 
-import webhooks from './webhooks.js'
+// import webhooks from './webhooks.js'
 import { channel } from 'diagnostics_channel'
 
 const app = express()
@@ -20,7 +20,7 @@ if (process.env.NODE_ENV !== 'production') {
   app.use(morgan('dev'))
 }
 app.use(cors())
-app.use(xhub({ algorithm: 'sha256', secret: process.env.APP_SECRET }))
+// app.use(xhub({ algorithm: 'sha256', secret: process.env.APP_SECRET }))
 app.use(express.urlencoded({ extended: true })) // body-parser
 app.use(express.json()) // parser-json data sent in request.body
 app.use(cookieParser())
@@ -34,7 +34,7 @@ app.get('/', (req, res) => {
   )
 })
 
-app.use('/webhooks', webhooks)
+// app.use('/webhooks', webhooks)
 
 const files = readdirSync('./router')
 files.map(async (file) => {

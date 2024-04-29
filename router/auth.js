@@ -8,31 +8,6 @@ import { auth, adminCheck } from '../middleware/auth.js'
 const router = express.Router()
 
 // http://localhost:8000/api/register
-/**
- * @swagger
- * /api/register:
- *    post:
- *      summary: Register a new user
- *      tags: [Authorization]
- *      requestBody:
- *        required: true
- *        content:
- *          application/json:
- *            schema:
- *              type: object
- *              properties:
- *                username:
- *                  type: string
- *                password:
- *                  type: string
- *      responses:
- *        200:
- *          description: Registration successful
- *        400:
- *          description: User already exists
- *        500:
- *          description: Internal server error
- */
 router.post('/register', async (req, res) => {
   try {
     let { username, password } = req.body
@@ -55,32 +30,6 @@ router.post('/register', async (req, res) => {
   }
 })
 
-/**
- * @swagger
- * /api/cookie/get:
- *    get:
- *      summary: Get stored cookies
- *      tags: [Authorization]
- *      responses:
- *        200:
- *          description: Cookies retrieved successfully
- *          content:
- *            application/json:
- *              schema:
- *                type: object
- *                properties:
- *                  username:
- *                    type: string
- *                    description: The stored username cookie value.
- *                  password:
- *                    type: string
- *                    description: The stored password cookie value.
- *                  save:
- *                    type: boolean
- *                    description: Indicates if the save cookie is set.
- *        500:
- *          description: Internal server error
- */
 router.get('/cookie/get', (req, res) => {
   let u = req.cookies['username'] || ''
   let p = req.cookies['password'] || ''
@@ -88,33 +37,6 @@ router.get('/cookie/get', (req, res) => {
   res.json({ username: u, password: p, save: s })
 })
 
-/**
- * @swagger
- * /api/login:
- *    post:
- *      summary: Login
- *      tags: [Authorization]
- *      requestBody:
- *        required: true
- *        content:
- *          application/json:
- *            schema:
- *              type: object
- *              properties:
- *                username:
- *                  type: string
- *                password:
- *                  type: string
- *                save:
- *                  type: boolean
- *      responses:
- *        200:
- *          description: Login successful
- *        400:
- *          description: User not found or invalid password
- *        500:
- *          description: Internal server error
- */
 router.post('/login', async (req, res) => {
   try {
     let username = req.body.username || ''
@@ -172,44 +94,6 @@ router.post('/login', async (req, res) => {
 })
 
 //TODO: Development
-/**
- * @swagger
- * /api/login-facebook:
- *    post:
- *      summary: Login with Facebook
- *      tags: [Authorization]
- *      requestBody:
- *        required: true
- *        content:
- *          application/json:
- *            schema:
- *              type: object
- *              properties:
- *                userID:
- *                  type: string
- *                name:
- *                  type: string
- *                email:
- *                  type: string
- *                picture:
- *                  type: string
- *      responses:
- *        200:
- *          description: User logged in successfully
- *          content:
- *            application/json:
- *              schema:
- *                type: object
- *                properties:
- *                  token:
- *                    type: string
- *                    description: JWT token for authorization
- *                  payload:
- *                    type: object
- *                    description: User information
- *        500:
- *          description: Internal server error
- */
 router.post('/login-facebook', async (req, res) => {
   try {
     const { userID, name, email, picture } = req.body
@@ -244,26 +128,6 @@ router.post('/login-facebook', async (req, res) => {
   }
 })
 
-/**
- * @swagger
- * /api/current-user:
- *    post:
- *      summary: Get current user
- *      tags: [Authorization]
- *      security:
- *        - JWTAuth: []
- *      responses:
- *        200:
- *          description: Current user retrieved successfully
- *          content:
- *            application/json:
- *              schema:
- *                $ref: '#/components/schemas/User'
- *        401:
- *          description: Unauthorized access
- *        500:
- *          description: Internal server error
- */
 router.post('/current-user', auth, (req, res) => {
   console.log('currentUser', req.user)
   User.findOne({ username: req.user.username })
@@ -278,26 +142,6 @@ router.post('/current-user', auth, (req, res) => {
     .catch((err) => res.status(500).send('Server Error'))
 })
 
-/**
- * @swagger
- * /api/current-admin:
- *    post:
- *      summary: Get current admin
- *      tags: [Authorization]
- *      security:
- *        - JWTAuth: []
- *      responses:
- *        200:
- *          description: Current admin retrieved successfully
- *          content:
- *            application/json:
- *              schema:
- *                $ref: '#/components/schemas/User'
- *        401:
- *          description: Unauthorized access
- *        500:
- *          description: Internal server error
- */
 router.post('/current-admin', auth, adminCheck, (req, res) => {
   // console.log('currentAdmin', req.user)
   User.findOne({ username: req.user.username })
@@ -309,40 +153,5 @@ router.post('/current-admin', auth, adminCheck, (req, res) => {
       res.status(500).send('Server Error')
     })
 })
-
-/**
- * @swagger
- * components:
- *   schemas:
- *     Authorization:
- *       type: object
- *       properties:
- *         token:
- *           type: string
- *           description: JWT token for authorization.
- *         payload:
- *           type: object
- *           description: User information payload.
- *           properties:
- *             user:
- *               type: object
- *               description: User details.
- *               properties:
- *                 username:
- *                   type: string
- *                   description: The username of the user.
- *                 name:
- *                   type: string
- *                   description: The name of the user.
- *                 email:
- *                   type: string
- *                   description: The email of the user.
- *                 picture:
- *                   type: string
- *                   description: The picture URL of the user.
- *                 role:
- *                   type: string
- *                   description: The role of the user (e.g., admin, user).
- */
 
 export default router

@@ -7,6 +7,9 @@ import cors from 'cors'
 import xhub from 'express-x-hub'
 import cookieParser from 'cookie-parser'
 
+import swaggerUi from 'swagger-ui-express'
+import { swaggerSpec } from './swaggerConfig.js'
+
 import webhooks from './webhooks.js'
 import { channel } from 'diagnostics_channel'
 
@@ -20,14 +23,18 @@ app.use(cors())
 app.use(xhub({ algorithm: 'sha256', secret: process.env.APP_SECRET }))
 app.use(express.urlencoded({ extended: true })) // body-parser
 app.use(express.json()) // parser-json data sent in request.body
-
 app.use(cookieParser())
 
+/* ----- UI Swagger API  -----*/
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
+
 app.get('/', (req, res) => {
-  res.send(`<h1>Hello From Server... <br> ${os.hostname()}</h1>`)
+  res.send(
+    `<h1>Server running at <br> ${os.hostname()}</h1> <br> <a href="/api-docs">Swagger API</a>`
+  )
 })
 
-app.use('/webhooks', webhooks)
+// app.use('/webhooks', webhooks)
 
 const files = readdirSync('./router')
 files.map(async (file) => {
@@ -35,7 +42,25 @@ files.map(async (file) => {
   app.use('/api', fs.default)
 })
 
+/**
+ * @swagger
+ * /o/{id}:
+ *    parameters:
+ *      - in: path
+ *        name: id
+ *        required: true
+ *        schema:
+ *          type: number
+ *    get:
+ *      summary: Get Sale Orders
+ *      responses:
+ *        200:
+ *          description: Successful response
+ *        500:
+ *          description: Internal server error
+ */
 app.get('/o/:id', (req, res) => {
+  // Your API
   res.send(orderCustomer)
 })
 

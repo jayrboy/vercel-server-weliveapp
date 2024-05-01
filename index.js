@@ -26,12 +26,9 @@ app.use(express.json()) // parser-json data sent in request.body
 
 app.use(cookieParser())
 
+// Define your routes
 app.get('/', (req, res) => {
-  res
-    .type('text/plain')
-    .send(
-      `<h1>Server running at <br> ${os.hostname()}</h1> <br> <a href="/api-docs">Swagger API</a>`
-    )
+  res.send('Hello Server')
 })
 
 files.map(async (file) => {

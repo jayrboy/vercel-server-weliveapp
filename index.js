@@ -15,6 +15,7 @@ const files = readdirSync('./router')
 
 /* --- Middleware --- */
 if (process.env.NODE_ENV !== 'production') {
+  3
   app.use(morgan('dev'))
 }
 
@@ -26,9 +27,11 @@ app.use(express.json()) // parser-json data sent in request.body
 app.use(cookieParser())
 
 app.get('/', (req, res) => {
-  res.send(
-    `<h1>Server running at <br> ${os.hostname()}</h1> <br> <a href="/api-docs">Swagger API</a>`
-  )
+  res
+    .type('text/plain')
+    .send(
+      `<h1>Server running at <br> ${os.hostname()}</h1> <br> <a href="/api-docs">Swagger API</a>`
+    )
 })
 
 files.map(async (file) => {
@@ -50,7 +53,7 @@ const swaggerOption = {
       },
     ],
   },
-  apis: ['./router/*.js'],
+  apis: ['./router/*.js'], // Adjust this path as needed
 }
 
 const swaggerSpec = swaggerJsdoc(swaggerOption)

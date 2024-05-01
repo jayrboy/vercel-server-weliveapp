@@ -26,6 +26,12 @@ app.use(express.json()) // parser-json data sent in request.body
 
 app.use(cookieParser())
 
+app.get('/', (req, res) => {
+  res.send(
+    `<h1>Server running at <br> ${os.hostname()}</h1> <br> <a href="/api-docs">Swagger API</a>`
+  )
+})
+
 files.map(async (file) => {
   let fs = await import(`./router/${file}`)
   app.use('/api', fs.default)
@@ -41,7 +47,7 @@ const swaggerOption = {
     },
     servers: [
       {
-        url: 'http://localhost:8000',
+        url: 'https://vercel-server-weliveapp.vercel.app',
       },
     ],
   },
@@ -59,6 +65,15 @@ app.disable('x-powered-by')
 /* --- Server --- */
 const port = process.env.PORT || 8000
 
-app.listen(port, () => {
-  console.log('Server running at http://localhost:%s', port)
-})
+const startApp = () => {
+  try {
+    app.listen(port, () => {
+      console.log('Server running at http://localhost:%s', port)
+    })
+  } catch (error) {
+    console.log(error)
+    process.exit(1)
+  }
+}
+
+startApp()

@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken'
-import { User } from '../models.js'
+import User from '../Models/User.js'
 
 export const auth = async (req, res, next) => {
   try {
@@ -17,7 +17,7 @@ export const auth = async (req, res, next) => {
 
 export const adminCheck = async (req, res, next) => {
   try {
-    console.log(req.user.username)
+    // console.log(req.user.username)
     const userAdmin = await User.findOne({ username: req.user.username })
       .select('-password')
       .exec()

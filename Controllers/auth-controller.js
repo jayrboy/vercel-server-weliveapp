@@ -1,14 +1,8 @@
-import express from 'express'
+import User from '../Models/User.js'
 import bcrypt from 'bcryptjs'
-import { User } from '../models.js'
 import jwt from 'jsonwebtoken'
 
-import { auth, adminCheck } from '../middleware/auth.js'
-
-const router = express.Router()
-
-// http://localhost:8000/api/register
-router.post('/register', async (req, res) => {
+export const register = async (req, res) => {
   try {
     let { username, password } = req.body
     let userData = await User.findOne({ username })
@@ -28,16 +22,9 @@ router.post('/register', async (req, res) => {
   } catch (error) {
     res.status(500).send({ message: error.message })
   }
-})
+}
 
-router.get('/cookie/get', (req, res) => {
-  let u = req.cookies['username'] || ''
-  let p = req.cookies['password'] || ''
-  let s = req.cookies['save'] ? true : false
-  res.json({ username: u, password: p, save: s })
-})
-
-router.post('/login', async (req, res) => {
+export const login = async (req, res) => {
   try {
     let username = req.body.username || ''
     let password = req.body.password || ''
@@ -91,10 +78,9 @@ router.post('/login', async (req, res) => {
     console.log({ message: error })
     res.status(500).send('Internal Server Error')
   }
-})
+}
 
-//TODO: Development
-router.post('/login-facebook', async (req, res) => {
+export const loginFB = async (req, res) => {
   try {
     const { userID, name, email, picture } = req.body
     let userData = {
@@ -126,10 +112,17 @@ router.post('/login-facebook', async (req, res) => {
     console.log(err)
     res.json({ token, payload })
   }
-})
+}
 
-router.post('/current-user', auth, (req, res) => {
-  console.log('currentUser', req.user)
+export const getCookies = (req, res) => {
+  let u = req.cookies['username'] || ''
+  let p = req.cookies['password'] || ''
+  let s = req.cookies['save'] ? true : false
+  res.json({ username: u, password: p, save: s })
+}
+
+export const checkUser = (req, res) => {
+  // console.log('currentUser', req.user)
   User.findOne({ username: req.user.username })
     .select('-password')
     .exec()
@@ -140,9 +133,9 @@ router.post('/current-user', auth, (req, res) => {
       res.send(user)
     })
     .catch((err) => res.status(500).send('Server Error'))
-})
+}
 
-router.post('/current-admin', auth, adminCheck, (req, res) => {
+export const checkAdmin = (req, res) => {
   // console.log('currentAdmin', req.user)
   User.findOne({ username: req.user.username })
     .select('-password')
@@ -152,6 +145,4 @@ router.post('/current-admin', auth, adminCheck, (req, res) => {
       console.log({ message: err })
       res.status(500).send('Server Error')
     })
-})
-
-export default router
+}

@@ -1,5 +1,5 @@
 import express from 'express'
-import { DailyStock } from '../models.js'
+import DailyStock from '../Models/DailyStock.js'
 
 const router = express.Router()
 

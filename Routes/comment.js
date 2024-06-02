@@ -1,9 +1,10 @@
 import express from 'express'
-import { Order } from '../models.js'
+import Order from '../Models/Order.js'
 
 const router = express.Router()
 
-// Endpoint สำหรับเพิ่มความคิดเห็น
+// Example from Chat GPT: Endpoint สำหรับเพิ่มความคิดเห็น
+
 router.post('/comments', async (req, res) => {
   try {
     const { userId, productId, content } = req.body

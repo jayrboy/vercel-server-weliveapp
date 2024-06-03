@@ -8,7 +8,7 @@ import {
   checkUser,
   checkAdmin,
 } from '../Controllers/auth-controller.js'
-import { auth, authAdmin } from '../Middleware/auth.js'
+import { auth, authAdmin } from '../middleware/auth.js'
 
 const router = express.Router()
 

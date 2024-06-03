@@ -1,6 +1,6 @@
 import express from 'express'
 import { getAll, updateRole } from '../Controllers/user-controller.js'
-import { auth, authAdmin } from '../Middleware/auth.js'
+import { auth, authAdmin } from '../middleware/auth.js'
 
 const router = express.Router()
 

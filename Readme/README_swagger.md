@@ -1,5 +1,9 @@
 # (1) Swagger API
 
+https://swagger.io/docs/specification/basic-structure/
+https://swagger.io/docs/specification/data-models/data-types/
+https://swagger.io/docs/specification/adding-examples/
+
 1. install swagger ui
 
 ```sh

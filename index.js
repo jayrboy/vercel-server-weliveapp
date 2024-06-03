@@ -28,12 +28,9 @@ const options = {
       {
         url: 'http://localhost:8000',
       },
-      {
-        url: 'https://vercel-server-weliveapp.vercel.app',
-      },
     ],
   },
-  apis: ['./Routes/*.js'],
+  apis: ['./Routes/*.js'], // ระบุ path ไปยังไฟล์ที่มี API documentation
 }
 const swagger = swaggerJsdoc(options)
 
@@ -50,7 +47,7 @@ if (process.env.NODE_ENV != 'production') {
   app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swagger))
 } else {
   app.get('/', (req, res) => {
-    res.send(`<h1>Server running at <br> ${os.hostname()}</h1>`)
+    res.status(200).send(`<h1>${os.hostname()}</h1>`)
   })
 }
 // app.use('/webhooks', webhooks)
@@ -60,6 +57,11 @@ const files = fs.readdirSync('./Routes')
 files.map(async (file) => {
   let fs = await import(`./Routes/${file}`)
   app.use('/api', fs.default)
+})
+
+app.use((req, res) => {
+  // กรณีที่กำหนด URL ไม่ตรงกับพาธ
+  res.status(404).type('text/plain').send('404 Not Found')
 })
 
 /* --- Server --- */

@@ -2,36 +2,22 @@ import User from '../Models/User.js'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 
-export const generateToken = async (req, res) => {
-  try {
-    jwt.sign({}, 'jwtsecret', { expiresIn: '1h' }, (error, token) => {
-      if (error) throw error
-      res.status(200).json({ jwt: token, success: true })
-    })
-  } catch (error) {
-    res.status(500).send({ message: error.message, success: false })
-  }
-}
-
 export const register = async (req, res) => {
   try {
     let { username, password } = req.body
-    let user = await User.findOne({ username })
-
-    if (user) {
-      return res.status(400).send('User Already Exists!')
+    let userData = await User.findOne({ username })
+    if (userData) {
+      return res.send('User Already Exists!').status(400)
     } else {
       // encrypt
       const salt = await bcrypt.genSalt(10)
       password = await bcrypt.hash(password, salt)
-
-      user = new User({
+      userData = new User({
         username,
         password,
       })
-
-      await user.save()
-      res.status(200).send('Register Successfully')
+      await userData.save()
+      res.send('Register Successfully')
     }
   } catch (error) {
     res.status(500).send({ message: error.message })
@@ -43,14 +29,16 @@ export const login = async (req, res) => {
     let username = req.body.username || ''
     let password = req.body.password || ''
 
-    // Check if the user exists
+    // // Check if the user exists
     let user = await User.findOne({ username })
+
     if (!user) {
-      return res.status(404).send('User Not Found!!!')
+      return res.status(400).send('User Not Found!!!')
     }
 
     // Compare passwords
     const isMatch = await bcrypt.compare(password, user.password)
+
     if (!isMatch) {
       return res.status(400).send('Password Invalid!!!')
     }

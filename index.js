@@ -13,35 +13,26 @@ import cookieParser from 'cookie-parser'
 import xhub from 'express-x-hub'
 // import webhooks from './webhooks.js'
 
-const swaggerOptions = {
+const app = express()
+
+/* --- API Spec --- */
+const options = {
   definition: {
     openapi: '3.0.0',
     info: {
-      title: 'Express.JS API with Swagger',
-      description: 'We Live App API documented',
+      title: 'Express API with Swagger',
       version: '1.0.0',
+      description: 'We Live App API documented',
     },
     servers: [
       {
         url: 'http://localhost:8000',
       },
     ],
-    // Add Authorization with Bearer <token>
-    components: {
-      securitySchemes: {
-        bearerAuth: {
-          type: 'http',
-          scheme: 'bearer',
-          bearerFormat: 'JWT',
-        },
-      },
-    },
-    security: [{ bearerAuth: [] }],
   },
   apis: ['./Routes/*.js'], // ระบุ path ไปยังไฟล์ที่มี API documentation
 }
-
-const app = express()
+const swagger = swaggerJsdoc(options)
 
 /* --- Middleware --- */
 app.use(cors())
@@ -51,17 +42,16 @@ app.use(express.json()) // parser-json data sent in request.body
 app.use(cookieParser())
 
 if (process.env.NODE_ENV != 'production') {
-  const swaggerSpec = swaggerJsdoc(swaggerOptions)
+  // Development Mode
   app.use(morgan('dev'))
   app.get('/', (req, res) => res.redirect('api-docs'))
-  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
+  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swagger))
 } else {
   // Production Mode
   app.get('/', (req, res) => {
     res.status(200).send(`<h1>${os.hostname()}</h1>`)
   })
 }
-
 // app.use('/webhooks', webhooks)
 
 /* --- API Endpoints --- */

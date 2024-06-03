@@ -7,6 +7,7 @@ https://www.npmjs.com/package/express
 npm init
 npm install express
 touch index.js .gitignore .env
+node --print "http.STATUS_CODES"
 ```
 
 default: run app `node app.js` or `node --watch app.js`
@@ -29,19 +30,21 @@ if setting to package.json: run scripts start to `npm start`
 
 # Deployment
 
+https://nodejs.org/en/learn/getting-started/nodejs-the-difference-between-development-and-production
+
 ```js
 if (process.env.NODE_ENV != 'production') {
   app.use(morgan('dev'))
   app.get('/', (req, res) => res.redirect('api-docs'))
   app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swagger))
+} else {
+  app.get('/', (req, res) => {
+    res.status(200).send(`<h1>${os.hostname()}</h1>`)
+  })
 }
 ```
 
-https://nodejs.org/en/learn/getting-started/nodejs-the-difference-between-development-and-production
-
-1. settings file hosting to vercel.json
-
-2. config `NODE_ENV": "production`
+- settings file hosting to vercel.json
 
 ```json
 {
@@ -54,16 +57,9 @@ https://nodejs.org/en/learn/getting-started/nodejs-the-difference-between-develo
   ],
   "routes": [
     {
-      "src": "/api/(.*)",
-      "dest": "/index.js"
-    },
-    {
       "src": "/(.*)",
       "dest": "/"
     }
-  ],
-  "env": {
-    "NODE_ENV": "production"
-  }
+  ]
 }
 ```

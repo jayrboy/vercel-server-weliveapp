@@ -138,29 +138,3 @@ export const getCookies = (req, res) => {
   let s = req.cookies['save'] ? true : false
   res.json({ username: u, password: p, save: s })
 }
-
-export const checkUser = (req, res) => {
-  // console.log('currentUser', req.user)
-  User.findOne({ username: req.user.username })
-    .select('-password')
-    .exec()
-    .then((user) => {
-      if (!user) {
-        return res.status(404).send({ message: 'User not found' })
-      }
-      res.send(user)
-    })
-    .catch((err) => res.status(500).send('Server Error'))
-}
-
-export const checkAdmin = (req, res) => {
-  // console.log('currentAdmin', req.user)
-  User.findOne({ username: req.user.username })
-    .select('-password')
-    .exec()
-    .then((docs) => res.send(docs))
-    .catch((err) => {
-      console.log({ message: err })
-      res.status(500).send('Server Error')
-    })
-}

@@ -26,19 +26,16 @@ export const create = (req, res) => {
     limit: form.limit || 0,
     cf: form.cf || 0,
     paid: form.paid || 0,
+    remaining_cf: form.paid || 0,
     remaining: form.stock || 0,
-    create_date: form.date_added
-      ? new Date(Date.parse(form.date_added))
-      : new Date(),
-    update_date: new Date(),
-    is_delete: false,
+    date_added: new Date(Date.parse(form.date_added)) || new Date(),
   }
   // console.log(data)
 
   Product.create(data)
     .then((docs) => {
       console.log('Document saved')
-      res.send(true)
+      res.send(docs)
     })
     .catch((err) => {
       console.log(err.message)
@@ -58,10 +55,9 @@ export const update = (req, res) => {
     limit: form.limit,
     cf: form.cf,
     paid: form.paid,
+    remaining_cf: form.cf - form.paid,
     remaining: form.stock,
-    create_date: form.date_added,
-    update_date: new Date(),
-    is_delete: form.is_delete,
+    date_added: form.date_added,
   }
 
   // console.log(data)

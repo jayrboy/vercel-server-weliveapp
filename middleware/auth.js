@@ -18,7 +18,7 @@ export const auth = async (req, res, next) => {
   }
 }
 
-export const adminCheck = async (req, res, next) => {
+export const routeAdmin = async (req, res, next) => {
   try {
     // console.log(req.user.username)
     const userAdmin = await User.findOne({ username: req.user.username })

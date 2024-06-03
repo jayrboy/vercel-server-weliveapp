@@ -5,10 +5,9 @@ import {
   login,
   loginFB,
   getCookies,
-  checkUser,
-  checkAdmin,
 } from '../Controllers/auth-controller.js'
-import { auth, adminCheck } from '../middleware/auth.js'
+import { checkUser } from '../Controllers/user-controller.js'
+import { auth, routeAdmin } from '../middleware/auth.js'
 
 const router = express.Router()
 
@@ -140,6 +139,6 @@ router.get('/cookie/get', getCookies)
 
 router.post('/current-user', auth, checkUser)
 
-router.post('/current-admin', auth, adminCheck, checkAdmin)
+router.post('/current-admin', auth, routeAdmin, checkUser)
 
 export default router

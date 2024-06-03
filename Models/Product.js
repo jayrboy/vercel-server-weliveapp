@@ -10,10 +10,9 @@ let productSchema = new mongoose.Schema({
   limit: Number,
   cf: Number,
   paid: Number,
+  remaining_cf: Number,
   remaining: Number,
-  create_date: Date,
-  update_date: Date,
-  is_delete: Boolean,
+  date_added: Date,
 })
 
 productSchema.plugin(paginate) //สำหรับแบ่งเพจ

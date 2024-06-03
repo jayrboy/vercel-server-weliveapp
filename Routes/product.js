@@ -32,51 +32,37 @@ const router = express.Router()
  *              properties:
  *                code:
  *                  type: string
- *                  default: "A2"
+ *                  default: "T1"
  *                name:
  *                  type: string
- *                  default: "สินค้าทดสอบ"
+ *                  default: "รองเท้า"
  *                price:
  *                  type: number
- *                  default: 700
+ *                  default: 500
  *                stock_quantity:
  *                  type: number
- *                  default: 10
+ *                  default: 1000
  *                cost:
  *                  type: number
- *                  default: 5000
+ *                  default: 250000
  *                limit:
- *                  type: number
- *                  default: 0
- *                cf:
- *                  type: number
- *                  default: 0
- *                paid:
  *                  type: number
  *                  default: 0
  *                remaining:
  *                  type: number
- *                  default: 0
- *                create_date:
+ *                  default: 1000
+ *                date_added:
  *                  type: string
- *                  default: "2023-01-01T00:00:00Z"
- *                update_date:
- *                  type: string
- *                  default: "2023-01-01T00:00:00Z"
- *                is_delete:
- *                  type: boolean
- *                  default: false
+ *                  default: "2024-06-03"
  *      responses:
- *        200:
- *          description: Document saved
- *          content:
- *            application/json:
- *              schema:
- *                type: boolean
- *        500:
- *          description: Internal server error
+ *        201:
+ *          description: Create
+ *        400:
+ *          description: Bad request
+ *        401:
+ *          description: Unauthorized
  */
-router.post('/product', auth, create)
+router.post('/product', create)
 
 /**
  * @swagger
@@ -88,6 +74,10 @@ router.post('/product', auth, create)
  *      responses:
  *        200:
  *          description: Success
+ *        401:
+ *          description: Unauthorized
+ *        404:
+ *          description: Not found
  */
 router.get('/product', auth, getAll)
 
@@ -107,8 +97,10 @@ router.get('/product', auth, getAll)
  *      responses:
  *        200:
  *          description: Success
+ *        401:
+ *          description: Unauthorized
  *        404:
- *          description: Product not found
+ *          description: Not found
  */
 router.get('/product/read/:id', auth, getById)
 
@@ -164,9 +156,11 @@ router.get('/product/read/:id', auth, getById)
  *                  default: false
  *      responses:
  *        200:
- *          description: Document updated
- *        500:
- *          description: Internal server error
+ *          description: Success
+ *        400:
+ *          description: Bed request
+ *        401:
+ *          description: Unauthorized
  */
 router.put('/product', auth, update)
 
@@ -186,13 +180,11 @@ router.put('/product', auth, update)
  *            type: string
  *      responses:
  *        200:
- *          description: Document deleted
- *          content:
- *            application/json:
- *              schema:
- *                $ref: '#/components/schemas/Product'
- *        500:
- *          description: Internal server error
+ *          description: Success
+ *        401:
+ *          description: Unauthorized
+ *        404:
+ *          description: Not found
  */
 //TODO: สำหรับลบใน product ตอน create daily stock
 router.delete('/product/:id', auth, remove)
@@ -219,7 +211,11 @@ router.delete('/product/:id', auth, remove)
  *          description: The page of products to return.
  *      responses:
  *        200:
- *          description: A list of products that match the search criteria.
+ *          description: Success
+ *        401:
+ *          description: Unauthorized
+ *        404:
+ *          description: Not found
  *        500:
  *          description: Internal server error
  */
@@ -311,12 +307,10 @@ router.get('/product/search', auth, search)
  *         stock_quantity: 50
  *         limit: 5
  *         cf: 1.0
- *         remaining_cf: 0.5
  *         paid: 50.0
+ *         remaining_cf: 0.5
  *         remaining: 50.0
  *         date_added: "2023-01-01T00:00:00Z"
- *         update_date: "2023-01-02T00:00:00Z"
- *         is_delete: false
  */
 
 export default router

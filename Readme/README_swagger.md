@@ -3,6 +3,7 @@
 https://swagger.io/docs/specification/basic-structure/
 https://swagger.io/docs/specification/data-models/data-types/
 https://swagger.io/docs/specification/adding-examples/
+https://swagger.io/docs/specification/authentication/bearer-authentication/
 
 1. install swagger ui
 
@@ -28,6 +29,17 @@ const swaggerOption = {
         url: 'http://localhost:8000',
       },
     ],
+    // Add Authorization with Bearer <token>
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+        },
+      },
+    },
+    security: [{ bearerAuth: [] }],
   },
   apis: ['index.js'],
 }
@@ -58,6 +70,8 @@ if (process.env.NODE_ENV != 'production') {
  * /api/product:
  *    post:
  *      tags: [Product]
+ *      security:
+ *        - bearerAuth: []
  *      requestBody:
  *        required: true
  *        content:
@@ -76,6 +90,8 @@ if (process.env.NODE_ENV != 'production') {
  *          description: Success
  *        400:
  *          description: Bad request
+ *        401:
+ *          description: Unauthorized
  *        500:
  *          description: Internal server error
  */
@@ -89,9 +105,13 @@ if (process.env.NODE_ENV != 'production') {
  * /api/product:
  *    get:
  *      tags: [Product]
+ *      security:
+ *        - bearerAuth: []
  *      responses:
  *        200:
  *          description: Success
+ *        401:
+ *          description: Unauthorized
  *        404:
  *          description: Not found
  *        500:
@@ -107,6 +127,8 @@ if (process.env.NODE_ENV != 'production') {
  * /api/product/{id}:
  *    get:
  *      tags: [Product]
+ *      security:
+ *        - bearerAuth: []
  *      parameters:
  *        - in: path
  *          name: id
@@ -117,8 +139,10 @@ if (process.env.NODE_ENV != 'production') {
  *      responses:
  *        200:
  *          description: Success
+ *        401:
+ *          description: Unauthorized
  *        404:
- *          description: Product not found
+ *          description: Not found
  *        500:
  *          description: Internal server error
  */
@@ -132,6 +156,8 @@ if (process.env.NODE_ENV != 'production') {
  * /api/product:
  *    post:
  *      tags: [Product]
+ *      security:
+ *        - bearerAuth: []
  *      requestBody:
  *        required: true
  *        content:
@@ -164,6 +190,8 @@ if (process.env.NODE_ENV != 'production') {
  *                $ref: '#/components/schemas/Product'
  *        400:
  *          description: Bad request
+ *        401:
+ *          description: Unauthorized
  *        500:
  *          description: Internal server error
  */
@@ -177,6 +205,8 @@ if (process.env.NODE_ENV != 'production') {
  * /api/product/{id}:
  *    delete:
  *      tags: [Product]
+ *      security:
+ *        - bearerAuth: []
  *      parameters:
  *        - in: path
  *          name: id
@@ -187,6 +217,8 @@ if (process.env.NODE_ENV != 'production') {
  *      responses:
  *        200:
  *          description: Success
+ *        401:
+ *          description: Not found
  *        404:
  *          description: Not found
  *        500:
@@ -215,5 +247,10 @@ if (process.env.NODE_ENV != 'production') {
  *         date_added:
  *           type: Date
  *           format: Date
+ *       example:
+ *         _id: "66238c86a0f9c66406e2e036"
+ *         name: "test"
+ *         price: 100.0
+ *         date_added: "2023-01-01T00:00:00Z"
  */
 ```

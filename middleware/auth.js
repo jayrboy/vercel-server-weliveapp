@@ -3,15 +3,18 @@ import User from '../Models/User.js'
 
 export const auth = async (req, res, next) => {
   try {
-    const token = req.headers['authtoken']
+    const authHeader = req.headers['authorization']
+    const token = authHeader && authHeader.split(' ')[1] // "Bearer <token>" split to ["Bearer", "token"]
+
     if (!token) {
       return res.status(401).send({ message: 'No Token' })
     }
+
     const decoded = jwt.verify(token, 'jwtsecret')
     req.user = decoded.user
     next()
   } catch (error) {
-    res.status(500).send({ message: 'Token Invalid!' })
+    res.status(400).send({ message: 'Token Invalid!' })
   }
 }
 

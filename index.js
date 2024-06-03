@@ -29,6 +29,16 @@ const options = {
         url: 'http://localhost:8000',
       },
     ],
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+        },
+      },
+    },
+    security: [{ bearerAuth: [] }],
   },
   apis: ['./Routes/*.js'], // ระบุ path ไปยังไฟล์ที่มี API documentation
 }

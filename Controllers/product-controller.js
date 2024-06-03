@@ -3,7 +3,7 @@ import Product from '../Models/Product.js'
 export const getAll = (req, res) => {
   Product.find()
     .exec()
-    .then((docs) => res.json(docs))
+    .then((docs) => res.status(200).json(docs))
 }
 
 export const getById = (req, res) => {
@@ -11,14 +11,8 @@ export const getById = (req, res) => {
 
   Product.findById(id)
     .exec()
-    .then((doc) => {
-      if (doc) {
-        res.json(doc)
-      } else {
-        res.status(404).send('Product not found')
-      }
-    })
-    .catch((err) => res.status(500).send('Error: ' + err.message))
+    .then((doc) => res.json(doc))
+    .catch((err) => res.status(404).send('Product not found'))
 }
 
 export const create = (req, res) => {

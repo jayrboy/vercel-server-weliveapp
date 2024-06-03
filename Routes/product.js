@@ -7,6 +7,7 @@ import {
   remove,
   search,
 } from '../Controllers/product-controller.js'
+import { auth } from '../middleware/auth.js'
 
 const router = express.Router()
 
@@ -20,6 +21,8 @@ const router = express.Router()
  * /api/product:
  *    post:
  *      tags: [Product]
+ *      security:
+ *        - bearerAuth: []
  *      requestBody:
  *        required: true
  *        content:
@@ -73,43 +76,49 @@ const router = express.Router()
  *        500:
  *          description: Internal server error
  */
-router.post('/product', create)
+router.post('/product', auth, create)
 
 /**
  * @swagger
  * /api/product:
  *    get:
  *      tags: [Product]
+ *      security:
+ *        - bearerAuth: []
  *      responses:
  *        200:
  *          description: Success
  */
-router.get('/product', getAll)
+router.get('/product', auth, getAll)
 
 /**
  * @swagger
- * /api/product/{id}:
+ * /api/product/read/{id}:
  *    get:
  *      tags: [Product]
+ *      security:
+ *        - bearerAuth: []
  *      parameters:
  *        - in: path
  *          name: id
  *          required: true
  *          description: ID of the product to get
- *          type: integer
+ *          type: start
  *      responses:
  *        200:
  *          description: Success
  *        404:
  *          description: Product not found
  */
-// router.get('/product/:id', getById)
+router.get('/product/read/:id', auth, getById)
 
 /**
  * @swagger
  * /api/product:
  *    put:
  *      tags: [Product]
+ *      security:
+ *        - bearerAuth: []
  *      requestBody:
  *        required: true
  *        content:
@@ -159,13 +168,15 @@ router.get('/product', getAll)
  *        500:
  *          description: Internal server error
  */
-router.put('/product', update)
+router.put('/product', auth, update)
 
 /**
  * @swagger
  * /api/product/{id}:
  *    delete:
  *      tags: [Product]
+ *      security:
+ *        - bearerAuth: []
  *      parameters:
  *        - in: path
  *          name: id
@@ -184,13 +195,15 @@ router.put('/product', update)
  *          description: Internal server error
  */
 //TODO: สำหรับลบใน product ตอน create daily stock
-router.delete('/product/:id', remove)
+router.delete('/product/:id', auth, remove)
 
 /**
  * @swagger
  * /api/product/search:
  *    get:
  *      tags: [Product]
+ *      security:
+ *        - bearerAuth: []
  *      summary: Search products
  *      description: Search for products by name or detail.
  *      parameters:
@@ -210,7 +223,7 @@ router.delete('/product/:id', remove)
  *        500:
  *          description: Internal server error
  */
-router.get('/product/search', search)
+router.get('/product/search', auth, search)
 
 /**
  * @swagger

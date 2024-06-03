@@ -54,10 +54,10 @@ if (process.env.NODE_ENV != 'production') {
 
 /* --- API Endpoints --- */
 const files = fs.readdirSync('./Routes')
-files.map(async (file) => {
+for (const file of files) {
   let fs = await import(`./Routes/${file}`)
   app.use('/api', fs.default)
-})
+}
 
 app.use((req, res) => {
   // กรณีที่กำหนด URL ไม่ตรงกับพาธ

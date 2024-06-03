@@ -4,9 +4,8 @@ https://www.npmjs.com/package/express
 
 ```sh
 # create a folder for web server
-npm init
-touch app.js
-npm install express
+npm init- y && npm install express nodemon
+touch index.js .gitignore .env
 ```
 
 default: run app `node app.js` or `node --watch app.js`
@@ -21,7 +20,7 @@ if setting to package.json: run scripts start to `npm start`
   },
   "type": "module",
   "scripts": {
-    "start": "node index.js",
+    "start": "nodemon index.js",
     "start:prod": "NODE_ENV=production node index.js"
   }
 }

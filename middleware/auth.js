@@ -3,10 +3,13 @@ import User from '../Models/User.js'
 
 export const auth = async (req, res, next) => {
   try {
-    const token = req.headers['authtoken']
+    const authHeader = req.headers['authorization']
+    const token = authHeader && authHeader.split(' ')[1] // Bearer <token>
+
     if (!token) {
       return res.status(401).send({ message: 'No Token' })
     }
+
     const decoded = jwt.verify(token, 'jwtsecret')
     req.user = decoded.user
     next()
@@ -15,7 +18,7 @@ export const auth = async (req, res, next) => {
   }
 }
 
-export const adminCheck = async (req, res, next) => {
+export const authAdmin = async (req, res, next) => {
   try {
     // console.log(req.user.username)
     const userAdmin = await User.findOne({ username: req.user.username })

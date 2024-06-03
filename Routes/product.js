@@ -7,19 +7,114 @@ import {
   remove,
   search,
 } from '../Controllers/product-controller.js'
-
-const router = express.Router()
+import { auth } from '../Middleware/auth.js'
 
 /*  
  http://localhost:8000/api/db
  https://vercel-server-weliveapp.vercel.app/api/db 
 */
 
+const router = express.Router()
+
 /**
  * @swagger
- * /api/product:
+ * components:
+ *   schemas:
+ *     Product:
+ *       type: object
+ *       required:
+ *         - code
+ *         - name
+ *         - price
+ *       properties:
+ *         _id:
+ *           type: string
+ *           description: The auto-generated id
+ *           example: "66238c86a0f9c66406e2e036"
+ *         code:
+ *           type: string
+ *           description: Product code
+ *           example: "A2"
+ *         name:
+ *           type: string
+ *         price:
+ *           type: integer
+ *           format: int32
+ *           description: Product price
+ *           example: 100.0
+ *         cost:
+ *           type: integer
+ *           format: int32
+ *           description: Product cost
+ *           example: 80.0
+ *         stock_quantity:
+ *           type: integer
+ *           format: int32
+ *           description: Product stock quantity
+ *           example: 50
+ *         limit:
+ *           type: integer
+ *           format: int32
+ *           description: Purchase limit
+ *           example: 5
+ *         cf:
+ *           type: integer
+ *           format: int32
+ *           description: Custom factor
+ *           example: 1.0
+ *         remaining_cf:
+ *           type: integer
+ *           format: int32
+ *           description: Remaining custom factor
+ *           example: 0.5
+ *         paid:
+ *           type: integer
+ *           format: int32
+ *           description: Paid amount
+ *           example: 50.0
+ *         remaining:
+ *           type: integer
+ *           format: int32
+ *           description: Remaining amount
+ *           example: 50.0
+ *         date_added:
+ *           type: string
+ *           format: date-time
+ *           description: Date when the product was added
+ *           example: "2023-01-01T00:00:00Z"
+ *         update_date:
+ *           type: string
+ *           format: date-time
+ *           description: Date when the product was last updated
+ *           example: "2023-01-02T00:00:00Z"
+ *         is_delete:
+ *           type: boolean
+ *           description: Deletion status
+ *           example: false
+ *       example:
+ *         _id: "66238c86a0f9c66406e2e036"
+ *         code: "A2"
+ *         name: "test"
+ *         price: 100.0
+ *         cost: 80.0
+ *         stock_quantity: 50
+ *         limit: 5
+ *         cf: 1.0
+ *         remaining_cf: 0.5
+ *         paid: 50.0
+ *         remaining: 50.0
+ *         date_added: "2023-01-01T00:00:00Z"
+ *         update_date: "2023-01-02T00:00:00Z"
+ *         is_delete: false
+ */
+
+/**
+ * @swagger
+ * /api/product/create:
  *    post:
  *      tags: [Product]
+ *      security:
+ *        - bearerAuth: []
  *      requestBody:
  *        required: true
  *        content:
@@ -45,24 +140,10 @@ const router = express.Router()
  *                limit:
  *                  type: number
  *                  default: 0
- *                cf:
- *                  type: number
- *                  default: 0
- *                paid:
- *                  type: number
- *                  default: 0
- *                remaining:
- *                  type: number
- *                  default: 0
  *                create_date:
  *                  type: string
  *                  default: "2023-01-01T00:00:00Z"
  *                update_date:
- *                  type: string
- *                  default: "2023-01-01T00:00:00Z"
- *                is_delete:
- *                  type: boolean
- *                  default: false
  *      responses:
  *        200:
  *          description: Document saved
@@ -73,41 +154,45 @@ const router = express.Router()
  *        500:
  *          description: Internal server error
  */
-router.post('/product', create)
+router.post('/product/create', create)
 
 /**
  * @swagger
- * /api/product:
+ * /api/product/read:
  *    get:
  *      tags: [Product]
+ *      security:
+ *        - bearerAuth: []
  *      responses:
  *        200:
  *          description: Success
+ *        401:
+ *          description: Unauthorized
  */
-router.get('/product', getAll)
+router.get('/product/read', auth, getAll)
 
 /**
  * @swagger
- * /api/product/{id}:
+ * /api/product/read/{id}:
  *    get:
  *      tags: [Product]
  *      parameters:
  *        - in: path
  *          name: id
  *          required: true
- *          description: ID of the product to get
- *          type: integer
+ *          schema:
+ *            type: string
  *      responses:
  *        200:
  *          description: Success
  *        404:
  *          description: Product not found
  */
-// router.get('/product/:id', getById)
+router.get('/product/read/:id', getById)
 
 /**
  * @swagger
- * /api/product:
+ * /api/product/update:
  *    put:
  *      tags: [Product]
  *      requestBody:
@@ -159,20 +244,18 @@ router.get('/product', getAll)
  *        500:
  *          description: Internal server error
  */
-router.put('/product', update)
+router.put('/product/update', update)
 
 /**
  * @swagger
- * /api/product/{id}:
+ * /api/product/delete/{id}:
  *    delete:
  *      tags: [Product]
  *      parameters:
  *        - in: path
- *          name: id
+ *          type: string
+ *          name: _id
  *          required: true
- *          description: ID of the product to delete
- *          schema:
- *            type: string
  *      responses:
  *        200:
  *          description: Document deleted
@@ -184,7 +267,7 @@ router.put('/product', update)
  *          description: Internal server error
  */
 //TODO: สำหรับลบใน product ตอน create daily stock
-router.delete('/product/:id', remove)
+router.delete('/product/delete/:id', remove)
 
 /**
  * @swagger
@@ -192,118 +275,22 @@ router.delete('/product/:id', remove)
  *    get:
  *      tags: [Product]
  *      summary: Search products
- *      description: Search for products by name or detail.
+ *      security:
+ *        - bearerAuth: []
  *      parameters:
  *        - in: query
  *          name: q
  *          type: string
- *          required: false
  *          default: swag
- *          description: The query string for searching products by code or name.
  *        - in: query
  *          name: page
- *          type: integer
- *          description: The page of products to return.
+ *          type: string
  *      responses:
  *        200:
- *          description: A list of products that match the search criteria.
+ *          description: Success
  *        500:
  *          description: Internal server error
  */
 router.get('/product/search', search)
-
-/**
- * @swagger
- * components:
- *   schemas:
- *     Product:
- *       type: object
- *       required:
- *         - code
- *         - name
- *         - price
- *       properties:
- *         _id:
- *           type: string
- *           description: The auto-generated id
- *           example: "66238c86a0f9c66406e2e036"
- *         code:
- *           type: string
- *           description: Product code
- *           example: "A2"
- *         name:
- *           type: string
- *           description: Product name
- *           example: "test"
- *         price:
- *           type: number
- *           format: int32
- *           description: Product price
- *           example: 100.0
- *         cost:
- *           type: number
- *           format: int32
- *           description: Product cost
- *           example: 80.0
- *         stock_quantity:
- *           type: number
- *           format: int32
- *           description: Product stock quantity
- *           example: 50
- *         limit:
- *           type: number
- *           format: int32
- *           description: Purchase limit
- *           example: 5
- *         cf:
- *           type: number
- *           format: int32
- *           description: Custom factor
- *           example: 1.0
- *         remaining_cf:
- *           type: number
- *           format: int32
- *           description: Remaining custom factor
- *           example: 0.5
- *         paid:
- *           type: number
- *           format: int32
- *           description: Paid amount
- *           example: 50.0
- *         remaining:
- *           type: number
- *           format: int32
- *           description: Remaining amount
- *           example: 50.0
- *         date_added:
- *           type: string
- *           format: date-time
- *           description: Date when the product was added
- *           example: "2023-01-01T00:00:00Z"
- *         update_date:
- *           type: string
- *           format: date-time
- *           description: Date when the product was last updated
- *           example: "2023-01-02T00:00:00Z"
- *         is_delete:
- *           type: boolean
- *           description: Deletion status
- *           example: false
- *       example:
- *         _id: "66238c86a0f9c66406e2e036"
- *         code: "A2"
- *         name: "test"
- *         price: 100.0
- *         cost: 80.0
- *         stock_quantity: 50
- *         limit: 5
- *         cf: 1.0
- *         remaining_cf: 0.5
- *         paid: 50.0
- *         remaining: 50.0
- *         date_added: "2023-01-01T00:00:00Z"
- *         update_date: "2023-01-02T00:00:00Z"
- *         is_delete: false
- */
 
 export default router

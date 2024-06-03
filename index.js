@@ -42,12 +42,10 @@ app.use(express.json()) // parser-json data sent in request.body
 app.use(cookieParser())
 
 if (process.env.NODE_ENV != 'production') {
-  // Development Mode
   app.use(morgan('dev'))
   app.get('/', (req, res) => res.redirect('api-docs'))
   app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swagger))
 } else {
-  // Production Mode
   app.get('/', (req, res) => {
     res.status(200).send(`<h1>${os.hostname()}</h1>`)
   })
@@ -56,10 +54,10 @@ if (process.env.NODE_ENV != 'production') {
 
 /* --- API Endpoints --- */
 const files = fs.readdirSync('./Routes')
-for (const file of files) {
+files.map(async (file) => {
   let fs = await import(`./Routes/${file}`)
   app.use('/api', fs.default)
-}
+})
 
 app.use((req, res) => {
   // กรณีที่กำหนด URL ไม่ตรงกับพาธ

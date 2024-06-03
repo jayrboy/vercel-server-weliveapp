@@ -4,8 +4,9 @@ https://www.npmjs.com/package/express
 
 ```sh
 # create a folder for web server
-npm init- y && npm install express nodemon
-touch index.js .gitignore .env
+npm init
+touch app.js
+npm install express
 ```
 
 default: run app `node app.js` or `node --watch app.js`
@@ -14,55 +15,24 @@ if setting to package.json: run scripts start to `npm start`
 
 ```json
 {
-  "main": "index.js",
-  "engines": {
-    "node": "20.x"
-  },
+  "name": "server",
+  "description": "Web API with express and swagger documentation",
+  "main": "app.js",
   "type": "module",
   "scripts": {
-    "start": "nodemon index.js",
-    "start:prod": "NODE_ENV=production node index.js"
+    "start": "nodemon app.js"
+  },
+  "author": "Jay Jakkrit",
+  "dependencies": {
+    "express": "^4.18.2"
   }
 }
 ```
 
 # Deployment
 
-```js
-if (process.env.NODE_ENV != 'production') {
-  app.use(morgan('dev'))
-  app.get('/', (req, res) => res.redirect('api-docs'))
-  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swagger))
-}
-```
-
 https://nodejs.org/en/learn/getting-started/nodejs-the-difference-between-development-and-production
 
 1. settings file hosting to vercel.json
 
-2. config `NODE_ENV": "production`
-
-```json
-{
-  "version": 2,
-  "builds": [
-    {
-      "src": "index.js",
-      "use": "@vercel/node"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "/index.js"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/"
-    }
-  ],
-  "env": {
-    "NODE_ENV": "production"
-  }
-}
-```
+2. deploy to web vercel run `NODE_ENV=production node app.js`

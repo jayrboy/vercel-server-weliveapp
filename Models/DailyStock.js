@@ -3,7 +3,7 @@ import mongoose from 'mongoose'
 let dailyStockSchema = new mongoose.Schema({
   status: String,
   chanel: String,
-  products: [{ type: mongoose.Types.ObjectId, ref: 'Product' }],
+  products: Array,
   price_total: Number,
   date_added: Date,
 })

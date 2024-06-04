@@ -5,6 +5,8 @@ https://swagger.io/docs/specification/data-models/data-types/
 https://swagger.io/docs/specification/adding-examples/
 https://swagger.io/docs/specification/authentication/bearer-authentication/
 
+https://editor.swagger.io/?_gl=1*mogv8*_gcl_au*MzA2ODUyMTczLjE3MTQzOTk2MTA.&_ga=2.177703841.582691157.1717503507-1575908821.1714399610
+
 1. install swagger ui
 
 ```sh
@@ -18,10 +20,10 @@ import swaggerJsdoc from 'swagger-jsdoc'
 
 const swaggerOption = {
   definition: {
-    openapi: '3.0.0',
+    openapi: '3.0.3',
     info: {
-      title: 'API Documentation',
-      version: '1.0.0',
+      title: 'API Documentation - OpenAPI 3.0',
+      version: '1.0.11',
       description: 'A simple API documentation',
     },
     servers: [
@@ -72,28 +74,24 @@ if (process.env.NODE_ENV != 'production') {
  *      tags: [Product]
  *      security:
  *        - bearerAuth: []
+ *      summary: Add a new product to the stock
  *      requestBody:
- *        required: true
  *        content:
  *          application/json:
  *            schema:
- *              type: object
- *              properties:
- *                name:
- *                  type: String
- *                price:
- *                  type: Number
- *                date_added:
- *                  type: Date
+ *              $ref: '#/components/schemas/Product'
+ *        required: true
  *      responses:
- *        200:
- *          description: Success
+ *        201:
+ *          description: Create
+ *          content:
+ *            application/json:
+ *              schema:
+ *                $ref: '#/components/schemas/Product'
  *        400:
  *          description: Bad request
  *        401:
  *          description: Unauthorized
- *        500:
- *          description: Internal server error
  */
 ```
 
@@ -107,15 +105,20 @@ if (process.env.NODE_ENV != 'production') {
  *      tags: [Product]
  *      security:
  *        - bearerAuth: []
+ *      summary: Get All Products
  *      responses:
  *        200:
  *          description: Success
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: array
+ *                items:
+ *                  $ref: '#/components/schemas/Product'
  *        401:
  *          description: Unauthorized
  *        404:
  *          description: Not found
- *        500:
- *          description: Internal server error
  */
 ```
 
@@ -124,27 +127,29 @@ if (process.env.NODE_ENV != 'production') {
 ```js
 /**
  * @swagger
- * /api/product/{id}:
+ * /api/product/read/{id}:
  *    get:
  *      tags: [Product]
+ *      summary: Get Product By ID
  *      security:
  *        - bearerAuth: []
  *      parameters:
  *        - in: path
  *          name: id
  *          required: true
- *          description: ID of the product to get
  *          schema:
- *            type: String
+ *            type: string
  *      responses:
  *        200:
  *          description: Success
+ *          content:
+ *            application/json:
+ *              schema:
+ *                $ref: '#/components/schemas/Product'
  *        401:
  *          description: Unauthorized
  *        404:
  *          description: Not found
- *        500:
- *          description: Internal server error
  */
 ```
 
@@ -154,46 +159,28 @@ if (process.env.NODE_ENV != 'production') {
 /**
  * @swagger
  * /api/product:
- *    post:
+ *    put:
  *      tags: [Product]
  *      security:
  *        - bearerAuth: []
+ *      summary: Update Product
  *      requestBody:
  *        required: true
  *        content:
  *          application/json:
  *            schema:
- *              type: object
- *              properties:
- *                _id:
- *                  type: string
- *                code:
- *                  type: string
- *                name:
- *                  type: string
- *                price:
- *                  type: number
- *                cost:
- *                  type: number
- *                stock:
- *                  type: number
- *                limit:
- *                  type: number
- *                date_added:
- *                  type: string
+ *              $ref: '#/components/schemas/Product'
  *      responses:
  *        200:
- *          description: Document updated
+ *          description: Success
  *          content:
  *            application/json:
  *              schema:
  *                $ref: '#/components/schemas/Product'
  *        400:
- *          description: Bad request
+ *          description: Bed request
  *        401:
  *          description: Unauthorized
- *        500:
- *          description: Internal server error
  */
 ```
 
@@ -207,6 +194,7 @@ if (process.env.NODE_ENV != 'production') {
  *      tags: [Product]
  *      security:
  *        - bearerAuth: []
+ *      summary: Delete Product By ID
  *      parameters:
  *        - in: path
  *          name: id
@@ -217,12 +205,14 @@ if (process.env.NODE_ENV != 'production') {
  *      responses:
  *        200:
  *          description: Success
+ *          content:
+ *            application/json:
+ *              schema:
+ *                $ref: '#/components/schemas/Product'
  *        401:
- *          description: Not found
+ *          description: Unauthorized
  *        404:
  *          description: Not found
- *        500:
- *          description: Internal server error
  */
 ```
 
@@ -235,22 +225,56 @@ if (process.env.NODE_ENV != 'production') {
  *   schemas:
  *     Product:
  *       type: object
+ *       required:
+ *         - code
+ *         - name
+ *         - price
+ *         - cost
+ *         - stock_quantity
+ *         - date_added
  *       properties:
  *         _id:
- *           type: String
- *           description: Auto-generated ID.
+ *           type: string
+ *           description: The auto-generated id
+ *           example: "66238c86a0f9c66406e2e036"
+ *         code:
+ *           type: string
+ *           example: "A2"
  *         name:
- *           type: String
+ *           type: string
+ *           example: "test"
  *         price:
- *           type: Number
- *           format: Number
+ *           type: number
+ *           example: 100.0
+ *         cost:
+ *           type: number
+ *           example: 80.0
+ *         stock_quantity:
+ *           type: number
+ *           format: int32
+ *           example: 50
+ *         limit:
+ *           type: number
+ *           example: 5
+ *         cf:
+ *           type: number
+ *           example: 1.0
+ *         paid:
+ *           type: number
+ *           example: 50.0
+ *         remaining_cf:
+ *           type: number
+ *           example: 0.5
+ *         remaining:
+ *           type: number
+ *           example: 50.0
  *         date_added:
- *           type: Date
- *           format: Date
- *       example:
- *         _id: "66238c86a0f9c66406e2e036"
- *         name: "test"
- *         price: 100.0
- *         date_added: "2023-01-01T00:00:00Z"
+ *           type: string
+ *           format: date-time
+ *           example: "2023-01-01T00:00:00Z"
+ *         date_added:
+ *           type: string
+ *           format: date-time
+ *           example: "2023-01-01T00:00:00Z"
  */
 ```

@@ -12,8 +12,8 @@ import { auth } from '../middleware/auth.js'
 const router = express.Router()
 
 /*  
- http://localhost:8000/api/db
- https://vercel-server-weliveapp.vercel.app/api/db 
+ http://localhost:8000/api/product
+ https://vercel-server-weliveapp.vercel.app/api/product
 */
 
 /**
@@ -23,46 +23,26 @@ const router = express.Router()
  *      tags: [Product]
  *      security:
  *        - bearerAuth: []
+ *      summary: Add a new product to the stock
  *      requestBody:
- *        required: true
  *        content:
  *          application/json:
  *            schema:
- *              type: object
- *              properties:
- *                code:
- *                  type: string
- *                  default: "T1"
- *                name:
- *                  type: string
- *                  default: "รองเท้า"
- *                price:
- *                  type: number
- *                  default: 500
- *                stock_quantity:
- *                  type: number
- *                  default: 1000
- *                cost:
- *                  type: number
- *                  default: 250000
- *                limit:
- *                  type: number
- *                  default: 0
- *                remaining:
- *                  type: number
- *                  default: 1000
- *                date_added:
- *                  type: string
- *                  default: "2024-06-03"
+ *              $ref: '#/components/schemas/Product'
+ *        required: true
  *      responses:
  *        201:
  *          description: Create
+ *          content:
+ *            application/json:
+ *              schema:
+ *                $ref: '#/components/schemas/Product'
  *        400:
  *          description: Bad request
  *        401:
  *          description: Unauthorized
  */
-router.post('/product', create)
+router.post('/product', auth, create)
 
 /**
  * @swagger
@@ -71,9 +51,16 @@ router.post('/product', create)
  *      tags: [Product]
  *      security:
  *        - bearerAuth: []
+ *      summary: Get All Products
  *      responses:
  *        200:
  *          description: Success
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: array
+ *                items:
+ *                  $ref: '#/components/schemas/Product'
  *        401:
  *          description: Unauthorized
  *        404:
@@ -86,17 +73,22 @@ router.get('/product', auth, getAll)
  * /api/product/read/{id}:
  *    get:
  *      tags: [Product]
+ *      summary: Get Product By ID
  *      security:
  *        - bearerAuth: []
  *      parameters:
  *        - in: path
  *          name: id
  *          required: true
- *          description: ID of the product to get
- *          type: start
+ *          schema:
+ *            type: string
  *      responses:
  *        200:
  *          description: Success
+ *          content:
+ *            application/json:
+ *              schema:
+ *                $ref: '#/components/schemas/Product'
  *        401:
  *          description: Unauthorized
  *        404:
@@ -111,52 +103,20 @@ router.get('/product/read/:id', auth, getById)
  *      tags: [Product]
  *      security:
  *        - bearerAuth: []
+ *      summary: Update Product
  *      requestBody:
  *        required: true
  *        content:
  *          application/json:
  *            schema:
- *              type: object
- *              properties:
- *                _id:
- *                  type: string
- *                  default: "665cbbdbf7955570e64d7a7a"
- *                code:
- *                  type: string
- *                  default: "A2"
- *                name:
- *                  type: string
- *                  default: "ทดสอบ"
- *                price:
- *                  type: number
- *                  default: 500
- *                stock_quantity:
- *                  type: number
- *                  default: 10
- *                cost:
- *                  type: number
- *                  default: 2500
- *                limit:
- *                  type: number
- *                  default: 10
- *                cf:
- *                  type: number
- *                  default: 0
- *                paid:
- *                  type: number
- *                  default: 0
- *                remaining:
- *                  type: number
- *                  default: 0
- *                create_date:
- *                  type: string
- *                  default: "2024-06-02T19:17:33.690Z"
- *                is_delete:
- *                  type: boolean
- *                  default: false
+ *              $ref: '#/components/schemas/Product'
  *      responses:
  *        200:
  *          description: Success
+ *          content:
+ *            application/json:
+ *              schema:
+ *                $ref: '#/components/schemas/Product'
  *        400:
  *          description: Bed request
  *        401:
@@ -171,6 +131,7 @@ router.put('/product', auth, update)
  *      tags: [Product]
  *      security:
  *        - bearerAuth: []
+ *      summary: Delete Product By ID
  *      parameters:
  *        - in: path
  *          name: id
@@ -181,6 +142,10 @@ router.put('/product', auth, update)
  *      responses:
  *        200:
  *          description: Success
+ *          content:
+ *            application/json:
+ *              schema:
+ *                $ref: '#/components/schemas/Product'
  *        401:
  *          description: Unauthorized
  *        404:
@@ -196,8 +161,7 @@ router.delete('/product/:id', auth, remove)
  *      tags: [Product]
  *      security:
  *        - bearerAuth: []
- *      summary: Search products
- *      description: Search for products by name or detail.
+ *      summary: Search Product by name or code
  *      parameters:
  *        - in: query
  *          name: q
@@ -212,6 +176,10 @@ router.delete('/product/:id', auth, remove)
  *      responses:
  *        200:
  *          description: Success
+ *          content:
+ *            application/json:
+ *              schema:
+ *                $ref: '#/components/schemas/Product'
  *        401:
  *          description: Unauthorized
  *        404:
@@ -220,6 +188,8 @@ router.delete('/product/:id', auth, remove)
  *          description: Internal server error
  */
 router.get('/product/search', auth, search)
+
+export default router
 
 /**
  * @swagger
@@ -231,6 +201,9 @@ router.get('/product/search', auth, search)
  *         - code
  *         - name
  *         - price
+ *         - cost
+ *         - stock_quantity
+ *         - date_added
  *       properties:
  *         _id:
  *           type: string
@@ -238,79 +211,37 @@ router.get('/product/search', auth, search)
  *           example: "66238c86a0f9c66406e2e036"
  *         code:
  *           type: string
- *           description: Product code
  *           example: "A2"
  *         name:
  *           type: string
- *           description: Product name
  *           example: "test"
  *         price:
  *           type: number
- *           format: int32
- *           description: Product price
  *           example: 100.0
  *         cost:
  *           type: number
- *           format: int32
- *           description: Product cost
  *           example: 80.0
  *         stock_quantity:
  *           type: number
  *           format: int32
- *           description: Product stock quantity
  *           example: 50
  *         limit:
  *           type: number
- *           format: int32
- *           description: Purchase limit
  *           example: 5
  *         cf:
  *           type: number
- *           format: int32
- *           description: Custom factor
  *           example: 1.0
- *         remaining_cf:
- *           type: number
- *           format: int32
- *           description: Remaining custom factor
- *           example: 0.5
  *         paid:
  *           type: number
- *           format: int32
- *           description: Paid amount
  *           example: 50.0
+ *         remaining_cf:
+ *           type: number
+ *           example: 0.5
  *         remaining:
  *           type: number
- *           format: int32
- *           description: Remaining amount
  *           example: 50.0
  *         date_added:
  *           type: string
  *           format: date-time
- *           description: Date when the product was added
  *           example: "2023-01-01T00:00:00Z"
- *         update_date:
- *           type: string
- *           format: date-time
- *           description: Date when the product was last updated
- *           example: "2023-01-02T00:00:00Z"
- *         is_delete:
- *           type: boolean
- *           description: Deletion status
- *           example: false
- *       example:
- *         _id: "66238c86a0f9c66406e2e036"
- *         code: "A2"
- *         name: "test"
- *         price: 100.0
- *         cost: 80.0
- *         stock_quantity: 50
- *         limit: 5
- *         cf: 1.0
- *         paid: 50.0
- *         remaining_cf: 0.5
- *         remaining: 50.0
- *         date_added: "2023-01-01T00:00:00Z"
  */
-
-export default router

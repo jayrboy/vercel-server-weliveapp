@@ -18,11 +18,12 @@ const app = express()
 /* --- API Spec --- */
 const options = {
   definition: {
-    openapi: '3.0.0',
+    openapi: '3.0.3',
     info: {
       title: 'Express API with Swagger',
-      version: '1.0.0',
-      description: 'We Live App API documented',
+      version: '1.0.11',
+      description:
+        'Swagger Tools - [Swagger Editor](https://editor.swagger.io/?_gl=1*mogv8*_gcl_au*MzA2ODUyMTczLjE3MTQzOTk2MTA.&_ga=2.177703841.582691157.1717503507-1575908821.1714399610)',
     },
     servers: [
       {

@@ -1,12 +1,12 @@
 import mongoose from 'mongoose'
 
 let orderSchema = new mongoose.Schema({
-  customer: Array,
+  idFb: String,
+  name: String,
+  email: String,
+  picture_profile: Array,
   orders: Array,
-  picture_payment: {
-    type: Array,
-    default: [{ data: { url: 'no-image.jpg' } }],
-  },
+  picture_payment: String,
   address: String,
   sub_district: String, // ตำบล/แขวง
   sub_area: String, // อำเภอ/เขต

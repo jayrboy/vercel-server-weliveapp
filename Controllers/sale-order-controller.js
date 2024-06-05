@@ -1,28 +1,67 @@
 import Order from '../Models/Order.js'
+import Customer from '../Models/Customer.js'
 
-export const create = (req, res) => {
+export const create = async (req, res) => {
+  // console.log(req.body)
+
   let form = req.body
   let data = {
-    status: form.status || 'New',
-    chanel: form.chanel || 'Facebook',
-    products: form.products || [],
-    price_total: form.price_total || 0,
+    idFb: form.idFb || '',
+    name: form.name || '',
+    email: form.email || '',
+    picture_profile: form.picture_profile || [],
+    orders: form.orders || [],
+    picture_payment: form.picture_payment || '',
+    address: form.address || '',
+    sub_district: form.sub_district || '',
+    sub_area: form.sub_area || '',
+    district: form.district || '',
+    postcode: form.postcode || '',
+    tel: form.tel || '',
+    complete: form.complete || false,
     date_added: form.date_added
       ? new Date(Date.parse(form.date_added))
       : new Date(),
   }
+  let customer = {
+    idFb: data.idFb || '',
+    name: data.name || '',
+    email: data.email || '',
+    picture_profile: data.picture_profile || [],
+  }
 
-  // console.log(data)
+  // ตรวจสอบว่าลูกค้ามีอยู่หรือไม่
+  let existingCustomer = await Customer.findOne({ idFb: customer.idFb })
+  if (!existingCustomer) {
+    existingCustomer = await Customer.create(customer)
+    console.log('New customer created:', existingCustomer)
+  }
 
-  Order.create(data)
-    .then((docs) => {
-      console.log('document saved new daily stock')
-      res.send(true)
-    })
-    .catch((err) => {
-      console.log('error saving daily stock:', err)
-      res.send(false)
-    })
+  // ตรวจสอบว่ามี Order ที่มี idFb ของลูกค้าตรงกับค่าที่รับเข้ามาหรือไม่
+  let existingOrder = await Order.findOne({ idFb: customer.idFb })
+  if (existingOrder) {
+    console.log('Order already exists:', existingOrder)
+    // มี Order นี้มีอยู่แล้ว ก็เพิ่มแค่ order
+    await Order.updateOne(
+      { 'customer.idFb': existingCustomer.idFb },
+      { $push: { orders: data.orders } }
+    )
+  } else {
+    Order.create(data)
+      .then((docs) => {
+        console.log('document saved new sale order')
+        res.status(200).send(true)
+      })
+      .catch((error) => {
+        console.error('Error creating order:', error)
+        res.status(400).send(false)
+      })
+  }
+  res
+    .status(200)
+    .send(
+      '1.ตรวจสอบลูกค้าเก่า ถ้ามีก็ไม่ต้องสร้างใหม่\n2.ตรวจสอบว่ามี Order ที่มี idFb ถ้ามี idFb ตรงก็ push เข้า order\n3.ถ้าไม่มี idFb ใน orders ก็สร้าง Sale Order\nสรุปตอนนี้ข้อมูลไม่ถูกสร้างใหม่ เนื่องจาก postman มีข้อมูลลูกค้าเก่า และมี idFb ตรงกับ order'
+    )
 }
 
 export const getAll = (req, res) => {

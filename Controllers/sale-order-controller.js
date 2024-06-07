@@ -1,77 +1,83 @@
+import { validationResult } from 'express-validator'
 import Order from '../Models/Order.js'
 import Customer from '../Models/Customer.js'
 
 export const create = async (req, res) => {
   // console.log(req.body)
+  try {
+    // ฟังก์ชัน validationResult จะดึงข้อมูลผลการตรวจสอบ (validation) จาก request
+    const errors = validationResult(req)
+    if (!errors.isEmpty()) {
+      // ใน errors: [] ว่างเปล่า แสดงว่ามีข้อผิดพลาดในการตรวจสอบข้อมูล
+      return res.status(400).json({ errors: errors.array() })
+    }
 
-  let form = req.body
-  let data = {
-    idFb: form.idFb || '',
-    name: form.name || '',
-    email: form.email || '',
-    picture_profile: form.picture_profile || [],
-    orders: form.orders || [],
-    picture_payment: form.picture_payment || '',
-    address: form.address || '',
-    sub_district: form.sub_district || '',
-    sub_area: form.sub_area || '',
-    district: form.district || '',
-    postcode: form.postcode || '',
-    tel: form.tel || '',
-    complete: form.complete || false,
-    date_added: form.date_added
-      ? new Date(Date.parse(form.date_added))
-      : new Date(),
-  }
-  let customer = {
-    idFb: data.idFb || '',
-    name: data.name || '',
-    email: data.email || '',
-    picture_profile: data.picture_profile || [],
-  }
+    let existingCustomer = await Customer.findOne({ idFb: req.body.idFb })
+    if (!existingCustomer) {
+      // ตรวจสอบว่าลูกค้า ถ้าไม่มีอยู่ ก็เพิ่มเข้า DB
+      let customer = {
+        idFb: req.body.idFb || '',
+        name: req.body.name || '',
+        email: req.body.email || '',
+        picture_profile: req.body.picture_profile || [],
+      }
+      Customer.create(customer)
+      console.log('New customer created')
+    }
 
-  // ตรวจสอบว่าลูกค้ามีอยู่หรือไม่
-  let existingCustomer = await Customer.findOne({ idFb: customer.idFb })
-  if (!existingCustomer) {
-    existingCustomer = await Customer.create(customer)
-    console.log('New customer created:', existingCustomer)
-  }
+    let form = req.body
+    let data = {
+      idFb: form.idFb || '',
+      name: form.name || '',
+      email: form.email || '',
+      picture_profile: form.picture_profile || [],
+      orders: form.orders || [],
+      picture_payment: form.picture_payment || '',
+      address: form.address || '',
+      sub_district: form.sub_district || '',
+      sub_area: form.sub_area || '',
+      district: form.district || '',
+      postcode: form.postcode || 0,
+      tel: form.tel || 0,
+      complete: form.complete || false,
+      date_added: form.date_added
+        ? new Date(Date.parse(form.date_added))
+        : new Date(),
+    }
 
-  // ตรวจสอบว่ามี Order ที่มี idFb ของลูกค้าตรงกับค่าที่รับเข้ามาหรือไม่
-  let existingOrder = await Order.findOne({ idFb: customer.idFb })
-  if (existingOrder) {
-    console.log('Order already exists:', existingOrder)
-    // มี Order นี้มีอยู่แล้ว ก็เพิ่มแค่ order
-    await Order.updateOne(
-      { 'customer.idFb': existingCustomer.idFb },
-      { $push: { orders: data.orders } }
-    )
-  } else {
-    Order.create(data)
-      .then((docs) => {
-        console.log('document saved new sale order')
-        res.status(200).send(true)
-      })
-      .catch((error) => {
-        console.error('Error creating order:', error)
-        res.status(400).send(false)
-      })
+    let existingOrder = await Order.findOne({ idFb: data.idFb })
+    // res.send(existingOrder)
+    // Orders นี้มีอยู่แล้ว ก็เพิ่มแค่ order ถ้าไม่มี ถึงจะสร้างใหม่
+    if (existingOrder) {
+      await Order.findOneAndUpdate(
+        { idFb: existingOrder.idFb },
+        { $push: { orders: existingOrder.orders[0] } },
+        { useFindAndModify: false }
+      )
+
+      // ดึง order เก่าที่อัปเดตแล้ว
+      existingOrder = await Order.findById(existingOrder._id)
+      res.status(200).send(existingOrder)
+    } else {
+      const newOrder = await Order.create(data)
+      console.log('Document saved new sale order')
+      res.status(200).send(newOrder)
+    }
+  } catch (error) {
+    console.error('Error processing request: ', error)
+    res
+      .status(500)
+      .send({ message: 'Internal Server Error', error: error.message })
   }
-  res
-    .status(200)
-    .send(
-      '1.ตรวจสอบลูกค้าเก่า ถ้ามีก็ไม่ต้องสร้างใหม่\n2.ตรวจสอบว่ามี Order ที่มี idFb ถ้ามี idFb ตรงก็ push เข้า order\n3.ถ้าไม่มี idFb ใน orders ก็สร้าง Sale Order\nสรุปตอนนี้ข้อมูลไม่ถูกสร้างใหม่ เนื่องจาก postman มีข้อมูลลูกค้าเก่า และมี idFb ตรงกับ order'
-    )
 }
 
 export const getAll = (req, res) => {
   Order.find()
     .sort({ date_added: -1 }) // เรียงข้อมูลตามวันที่เพิ่มข้อมูลล่าสุดก่อน
-    .populate('products')
     .exec()
     .then((docs) => res.json(docs))
     .catch((err) => {
-      console.error('Error reading daily stocks:', err)
+      console.error('Error reading sale orders:', err)
       res.status(500).send(false)
     })
 }
@@ -137,21 +143,15 @@ export const update = (req, res) => {
 }
 
 export const remove = (req, res) => {
-  const productId = req.params.id
-  // console.log(productId)
+  let _id = req.body._id
 
-  Order.updateOne({}, { $pull: { products: { _id: productId } } })
+  Order.findOneAndDelete(_id, { useFindAndModify: false })
     .exec()
-    .then((result) => {
-      if (result.nModified > 0) {
-        res.send('ลบข้อมูลสินค้าเรียบร้อย')
-      } else {
-        res.send('ไม่พบสินค้าที่ต้องการลบ')
-      }
+    .then(() => {
+      Order.find()
+        .exec()
+        .then((docs) => res.json(docs))
     })
-    .catch((err) => {
-      console.log('เกิดข้อผิดพลาดในการลบข้อมูลสินค้า:', err)
-      res.send('เกิดข้อผิดพลาดในการลบข้อมูลสินค้า')
-    })
+    .catch((err) => res.json({ message: err.message }))
 }
 export const paid = (req, res) => {}

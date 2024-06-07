@@ -1,4 +1,5 @@
 import express from 'express'
+import { body } from 'express-validator'
 import {
   create,
   getAll,
@@ -27,7 +28,7 @@ const router = express.Router()
  *        content:
  *          application/json:
  *            schema:
- *              $ref: '#/components/schemas/Order'
+ *              $ref: '#/components/schemas/SaleOrder'
  *        required: true
  *      responses:
  *        201:
@@ -35,13 +36,17 @@ const router = express.Router()
  *          content:
  *            application/json:
  *              schema:
- *                $ref: '#/components/schemas/Order'
+ *                $ref: '#/components/schemas/SaleOrder'
  *        400:
  *          description: Bad request
  *        401:
  *          description: Unauthorized
  */
-router.post('/sale-order', create)
+router.post(
+  '/sale-order',
+  body('idFb').notEmpty().withMessage('ID Facebook is required'),
+  create
+)
 
 /**
  * @swagger
@@ -59,7 +64,7 @@ router.post('/sale-order', create)
  *              schema:
  *                type: array
  *                items:
- *                  $ref: '#/components/schemas/Order'
+ *                  $ref: '#/components/schemas/SaleOrder'
  *        401:
  *          description: Unauthorized
  *        404:
@@ -87,7 +92,7 @@ router.get('/sale-order', getAll)
  *          content:
  *            application/json:
  *              schema:
- *                $ref: '#/components/schemas/Order'
+ *                $ref: '#/components/schemas/SaleOrder'
  *        401:
  *          description: Unauthorized
  *        404:
@@ -108,14 +113,14 @@ router.get('/sale-order/read/:id', getById)
  *        content:
  *          application/json:
  *            schema:
- *              $ref: '#/components/schemas/Order'
+ *              $ref: '#/components/schemas/SaleOrder'
  *      responses:
  *        200:
  *          description: Success
  *          content:
  *            application/json:
  *              schema:
- *                $ref: '#/components/schemas/Order'
+ *                $ref: '#/components/schemas/SaleOrder'
  *        400:
  *          description: Bed request
  *        401:
@@ -144,13 +149,13 @@ router.put('/sale-order', update)
  *          content:
  *            application/json:
  *              schema:
- *                $ref: '#/components/schemas/Order'
+ *                $ref: '#/components/schemas/SaleOrder'
  *        401:
  *          description: Unauthorized
  *        404:
  *          description: Not found
  */
-router.delete('/sale-order/delete/:id', remove)
+router.delete('/sale-order/:id', remove)
 
 /**
  * @swagger
@@ -165,14 +170,14 @@ router.delete('/sale-order/delete/:id', remove)
  *        content:
  *          application/json:
  *            schema:
- *              $ref: '#/components/schemas/Order'
+ *              $ref: '#/components/schemas/SaleOrder'
  *      responses:
  *        200:
  *          description: Success
  *          content:
  *            application/json:
  *              schema:
- *                $ref: '#/components/schemas/Order'
+ *                $ref: '#/components/schemas/SaleOrder'
  *        400:
  *          description: Bed request
  *        401:
@@ -186,50 +191,41 @@ export default router
  * @swagger
  * components:
  *   schemas:
- *     Order:
+ *     SaleOrder:
  *       type: object
- *       required:
- *         - picture_payment
- *         - address
- *         - sub_district
- *         - sub_area
- *         - district
- *         - postcode
- *         - tel
  *       properties:
- *         _id:
+ *         idFb:
  *           type: string
- *           description: The auto-generated id
- *           example: "66238c86a0f9c66406e2e036"
- *         customer:
+ *           example: "24610349765279316"
+ *         name:
+ *           type: string
+ *           example: "Jay Jakkrit"
+ *         email:
+ *           type: string
+ *           example: "example@fb.com"
+ *         picture_profile:
  *           type: array
- *           items:
- *            $ref: '#/components/schemas/Customer'
  *         orders:
  *           type: array
  *           items:
- *            $ref: '#/components/schemas/Product'
+ *            $ref: '#/components/schemas/Order'
  *         picture_payment:
  *           type: array
- *           example: []
  *         address:
  *           type: string
- *           example: "66/9 ถนน 345 ซ.1/2"
  *         sub_district:
  *           type: string
- *           example: "ทุ่งนา"
  *         sub_area:
  *           type: string
- *           example: "คนคู"
  *         district:
  *           type: string
- *           example: "กรุงใด"
  *         postcode:
  *           type: number
- *           example: 36000
  *         tel:
  *           type: number
- *           example: 6604554112
+ *         complete:
+ *           type: boolean
+ *           example: false
  *         date_added:
  *           type: string
  *           format: date-time
@@ -240,22 +236,19 @@ export default router
  * @swagger
  * components:
  *   schemas:
- *     Customer:
+ *     Order:
  *       type: object
  *       properties:
- *         idFb:
+ *         _id:
  *           type: string
- *           example: "66238c86a0f9_06e2e03612"
+ *           example: "66238c86a0f9c66406e2e036"
  *         name:
  *           type: string
- *           example: "Customer FB"
- *         email:
- *           type: string
- *           example: "example@test.com"
- *         picture:
- *           type: array
- *         date_added:
- *           type: string
- *           format: date-time
- *           example: "2023-01-01T00:00:00Z"
+ *           example: "Nike Air Max 90"
+ *         quantity:
+ *           type: number
+ *           example: 3
+ *         price:
+ *           type: number
+ *           example: 4200
  */

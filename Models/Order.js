@@ -14,6 +14,7 @@ let orderSchema = new mongoose.Schema({
   postcode: String,
   tel: String,
   date_added: Date,
+  complete: Boolean,
 })
 
 let Order = mongoose.model('Order', orderSchema)

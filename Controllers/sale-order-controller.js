@@ -72,7 +72,7 @@ export const create = async (req, res) => {
 }
 
 export const getAll = (req, res) => {
-  Order.find()
+  Order.find({ complete: false }) // กรองข้อมูลเฉพาะที่ complete เป็น false
     .sort({ date_added: -1 }) // เรียงข้อมูลตามวันที่เพิ่มข้อมูลล่าสุดก่อน
     .exec()
     .then((docs) => res.json(docs))
@@ -97,16 +97,15 @@ export const update = async (req, res) => {
       form.picture_payment = req.file.filename
     }
 
-    console.log(form) // ตรวจสอบข้อมูลที่ได้รับจาก form-data
+    // console.log(form) // ตรวจสอบข้อมูลที่ได้รับจาก form-data
 
     // อัปเดตข้อมูล products ภายใน Order
-    // const updatedOrder = await Order.findByIdAndUpdate(form._id, form, {
-    //   useFindAndModify: false,
-    //   new: true,
-    // })
+    let updatedOrder = await Order.findByIdAndUpdate(form._id, form, {
+      useFindAndModify: false,
+    })
 
-    // console.log('Document updated sale order')
-    // res.json(updatedOrder)
+    console.log('Document updated sale order')
+    res.json(updatedOrder)
   } catch (err) {
     console.error('Error updating order: ', err)
     res.status(400).json({ error: 'เกิดข้อผิดพลาดในการอัปเดตข้อมูล Order' })
@@ -125,4 +124,32 @@ export const remove = (req, res) => {
     })
     .catch((err) => res.json({ message: err.message }))
 }
-export const paid = (req, res) => {}
+
+export const paid = async (req, res) => {
+  try {
+    let form = req.body
+    // console.log(form) // ตรวจสอบข้อมูลที่ได้รับจาก form-data
+
+    // อัปเดตข้อมูล products ภายใน Order
+    Order.findByIdAndUpdate(
+      form._id,
+      { complete: form.complete },
+      {
+        useFindAndModify: false,
+      }
+    )
+      .exec()
+      .then(() => {
+        //หลังการอัปเดต ก็อ่านข้อมูลอีกครั้ง แล้วส่งไปแสดงผลที่ฝั่งโลคอลแทนข้อมูลเดิม
+        Order.findById(form._id)
+          .exec()
+          .then((docs) => {
+            console.log(`Order: ${docs.name} has been completed.`)
+            res.json(docs)
+          })
+      })
+  } catch (err) {
+    console.error('Error updating order: ', err.message)
+    res.status(400).json({ error: 'เกิดข้อผิดพลาดในการอัปเดตข้อมูล Order' })
+  }
+}

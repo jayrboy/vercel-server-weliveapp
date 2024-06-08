@@ -8,7 +8,8 @@ import {
   remove,
   paid,
 } from '../Controllers/sale-order-controller.js'
-import upload from '../middleware/upload.js'
+import { auth } from '../middleware/auth.js'
+import { upload } from '../middleware/upload.js'
 
 const router = express.Router()
 
@@ -71,7 +72,7 @@ router.post(
  *        404:
  *          description: Not found
  */
-router.get('/sale-order', getAll)
+router.get('/sale-order', auth, getAll)
 
 /**
  * @swagger
@@ -99,7 +100,7 @@ router.get('/sale-order', getAll)
  *        404:
  *          description: Not found
  */
-router.get('/sale-order/read/:id', getById)
+router.get('/sale-order/read/:id', auth, getById)
 
 /**
  * @swagger
@@ -127,7 +128,7 @@ router.get('/sale-order/read/:id', getById)
  *        401:
  *          description: Unauthorized
  */
-router.put('/sale-order', upload.single('picture_payment'), update)
+router.put('/sale-order', auth, upload.single('picture_payment'), update)
 
 /**
  * @swagger
@@ -156,7 +157,7 @@ router.put('/sale-order', upload.single('picture_payment'), update)
  *        404:
  *          description: Not found
  */
-router.delete('/sale-order/:id', remove)
+router.delete('/sale-order/:id', auth, remove)
 
 /**
  * @swagger
@@ -184,7 +185,7 @@ router.delete('/sale-order/:id', remove)
  *        401:
  *          description: Unauthorized
  */
-router.put('/sale-order/complete', paid)
+router.put('/sale-order/complete', auth, paid)
 
 export default router
 

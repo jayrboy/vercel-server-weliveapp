@@ -8,6 +8,7 @@ import {
   remove,
   paid,
 } from '../Controllers/sale-order-controller.js'
+import upload from '../middleware/upload.js'
 
 const router = express.Router()
 
@@ -126,7 +127,7 @@ router.get('/sale-order/read/:id', getById)
  *        401:
  *          description: Unauthorized
  */
-router.put('/sale-order', update)
+router.put('/sale-order', upload.single('picture_payment'), update)
 
 /**
  * @swagger
@@ -244,11 +245,11 @@ export default router
  *           example: "66238c86a0f9c66406e2e036"
  *         name:
  *           type: string
- *           example: "Nike Air Max 90"
+ *           example: "รองเท้าสุดเท่"
  *         quantity:
  *           type: number
  *           example: 3
  *         price:
  *           type: number
- *           example: 4200
+ *           example: 1000
  */

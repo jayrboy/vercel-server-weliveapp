@@ -64,3 +64,59 @@ router.get('/product/read', auth, getAll)
 
 - key: Authenticate
 - value: Bearer <token>
+
+# Middleware Upload Form Data
+
+1. Install Multer packages:
+
+```sh
+npm install multer
+```
+
+2. configure Multer to `file upload` in middleware named.
+   Create a new `./uploads` folder.
+
+```js
+import multer from 'multer'
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, './uploads')
+  },
+  filename: function (req, file, cb) {
+    cb(null, 'PAID-' + Date.now() + '-' + file.originalname)
+  },
+})
+
+const upload = multer({ storage: storage })
+
+export default upload
+```
+
+3. Define the File Upload Endpoint
+
+```js
+import express from 'express'
+import { update } from '../controllers/product.js'
+// middleware
+import upload from '../middleware/upload.js'
+
+const router = express.Router()
+
+// http://localhost:8000/api/sale-order
+router.put('/sale-order', upload.single('picture_payment'), update)
+
+export default router
+```
+
+4. Step 5: Test the API by Postman
+   form-data
+
+- picture_payment (file)
+- address
+- sub_district
+- sub_area
+- district
+- postcode
+- tel
+- date_added

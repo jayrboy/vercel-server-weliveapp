@@ -26,8 +26,8 @@ export const create = (req, res) => {
     limit: form.limit || 0,
     cf: form.cf || 0,
     paid: form.paid || 0,
-    remaining_cf: form.paid || 0,
-    remaining: form.stock || 0,
+    remaining_cf: form.remaining_cf || 0,
+    remaining: form.stock_quantity,
     date_added: new Date(Date.parse(form.date_added)) || new Date(),
   }
   // console.log(data)
@@ -46,9 +46,20 @@ export const create = (req, res) => {
 export const update = (req, res) => {
   // console.log(req.body)
   let form = req.body
+  let data = {
+    code: form.code,
+    name: form.name,
+    price: form.price,
+    stock_quantity: form.stock_quantity,
+    cost: form.cost,
+    limit: form.limit,
+    remaining: form.stock_quantity,
+    date_added: new Date(Date.parse(form.date_added)),
+  }
 
-  // console.log(form)
-  Product.findByIdAndUpdate(form._id, form, { useFindAndModify: false })
+  // console.log(data)
+
+  Product.findByIdAndUpdate(form._id, data, { useFindAndModify: false })
     .exec()
     .then(() => {
       //หลังการอัปเดต ก็อ่านข้อมูลอีกครั้ง แล้วส่งไปแสดงผลที่ฝั่งโลคอลแทนข้อมูลเดิม

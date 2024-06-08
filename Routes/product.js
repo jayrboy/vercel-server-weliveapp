@@ -152,7 +152,7 @@ router.put('/product', auth, update)
  *          description: Not found
  */
 //TODO: สำหรับลบใน product ตอน create daily stock
-router.delete('/product/:id', auth, remove)
+router.delete('/product/delete', auth, remove)
 
 /**
  * @swagger

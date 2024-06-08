@@ -143,7 +143,7 @@ router.get('/daily/new-status', (req, res) => {
  *        500:
  *          description: Internal server error
  */
-router.post('/daily/update', update)
+router.put('/daily/update', update)
 
 router.post('/daily/update/total', (req, res) => {
   const { id, total } = req.body

@@ -35,33 +35,20 @@ export const create = (req, res) => {
   Product.create(data)
     .then((docs) => {
       console.log('Document saved')
-      res.send(docs)
+      res.status(201).send(true)
     })
     .catch((err) => {
       console.log(err.message)
-      res.send(false)
+      res.status(400).send(false)
     })
 }
 
 export const update = (req, res) => {
   // console.log(req.body)
   let form = req.body
-  let data = {
-    code: form.code,
-    name: form.name,
-    price: form.price,
-    stock_quantity: form.stock_quantity,
-    cost: form.cost,
-    limit: form.limit,
-    cf: form.cf,
-    paid: form.paid,
-    remaining_cf: form.cf - form.paid,
-    remaining: form.stock,
-    date_added: form.date_added,
-  }
 
-  // console.log(data)
-  Product.findByIdAndUpdate(form._id, data, { useFindAndModify: false })
+  // console.log(form)
+  Product.findByIdAndUpdate(form._id, form, { useFindAndModify: false })
     .exec()
     .then(() => {
       //หลังการอัปเดต ก็อ่านข้อมูลอีกครั้ง แล้วส่งไปแสดงผลที่ฝั่งโลคอลแทนข้อมูลเดิม
@@ -76,9 +63,10 @@ export const update = (req, res) => {
 }
 
 export const remove = (req, res) => {
-  let _id = req.params.id
+  let form = req.body
+  // console.log(form)
 
-  Product.findByIdAndDelete(_id, { useFindAndModify: false })
+  Product.findByIdAndDelete(form._id, { useFindAndModify: false })
     .exec()
     .then(() => {
       // เมื่อลบข้อมูลสำเร็จ ทำการค้นหาข้อมูลสินค้าทั้งหมดใหม่
@@ -103,7 +91,7 @@ export const search = async (req, res) => {
 
     let options = {
       page: req.query.page || 1, // เพจปัจจุบัน
-      limit: 2, // แสดงผลหน้าละ 2 รายการ (ข้อมูลมีน้อย)
+      limit: 5, // แสดงผลหน้าละ 2 รายการ (ข้อมูลมีน้อย)
     }
 
     const result = await Product.paginate(conditions, options)

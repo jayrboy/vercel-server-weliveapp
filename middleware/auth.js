@@ -16,3 +16,21 @@ export const auth = async (req, res, next) => {
     res.status(400).send({ message: 'Token Invalid!' })
   }
 }
+
+export const routeAdmin = async (req, res, next) => {
+  try {
+    // console.log(req.user.username)
+    const userAdmin = await User.findOne({ username: req.user.username })
+      .select('-password')
+      .exec()
+    // console.log(userAdmin)
+
+    if (userAdmin.role != 'admin' && userAdmin.role != 'user') {
+      res.status(403).send({ message: 'Admin Access Denied!' })
+    } else {
+      next()
+    }
+  } catch (err) {
+    res.status(403).send({ error: 'Admin Access Denied!', err })
+  }
+}

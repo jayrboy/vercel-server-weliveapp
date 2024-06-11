@@ -128,7 +128,7 @@ router.get('/sale-order/read/:id', auth, getById)
  *        401:
  *          description: Unauthorized
  */
-router.put('/sale-order', auth, upload.single('picture_payment'), update)
+router.put('/sale-order', upload.single('picture_payment'), update)
 
 /**
  * @swagger
@@ -157,7 +157,7 @@ router.put('/sale-order', auth, upload.single('picture_payment'), update)
  *        404:
  *          description: Not found
  */
-router.delete('/sale-order/:id', auth, remove)
+router.delete('/sale-order/:id', remove)
 
 /**
  * @swagger
@@ -185,7 +185,7 @@ router.delete('/sale-order/:id', auth, remove)
  *        401:
  *          description: Unauthorized
  */
-router.put('/sale-order/complete', auth, paid)
+router.put('/sale-order/complete', paid)
 
 export default router
 

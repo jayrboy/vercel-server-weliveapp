@@ -6,6 +6,7 @@ import {
   getById,
   update,
   remove,
+  getHistory,
 } from '../Controllers/dailly-stock-controller.js'
 
 const router = express.Router()
@@ -206,5 +207,7 @@ router.post('/daily/change-role', (req, res) => {
     })
     .catch((err) => res.send('เกิดข้อผิดพลาด ไม่สามารถแก้ไขได้'))
 })
+
+router.get('/daily/history', getHistory)
 
 export default router

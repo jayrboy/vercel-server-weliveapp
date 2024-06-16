@@ -27,7 +27,7 @@ export const create = (req, res) => {
 }
 
 export const getAll = (req, res) => {
-  DailyStock.find()
+  DailyStock.find({ status: 'new' })
     .sort({ date_added: -1 }) // เรียงข้อมูลตามวันที่เพิ่มข้อมูลล่าสุดก่อน
     .exec()
     .then((docs) => res.json(docs))
@@ -75,5 +75,16 @@ export const remove = (req, res) => {
     .catch((err) => {
       console.log('เกิดข้อผิดพลาดในการลบข้อมูลสินค้า:', err)
       res.send('เกิดข้อผิดพลาดในการลบข้อมูลสินค้า')
+    })
+}
+
+export const getHistory = (req, res) => {
+  DailyStock.find({ status: 'clear' })
+    .sort({ date_added: -1 }) // เรียงข้อมูลตามวันที่เพิ่มข้อมูลล่าสุดก่อน
+    .exec()
+    .then((docs) => res.json(docs))
+    .catch((err) => {
+      console.error('Error reading daily stocks:', err)
+      res.status(500).send(false)
     })
 }

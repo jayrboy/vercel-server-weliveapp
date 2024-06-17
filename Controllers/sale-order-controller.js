@@ -1,7 +1,7 @@
 import { validationResult } from 'express-validator'
 import Order from '../Models/Order.js'
 import Customer from '../Models/Customer.js'
-
+import Product from '../Models/Product.js'
 export const create = async (req, res) => {
   // console.log(req.body)
   try {
@@ -19,7 +19,7 @@ export const create = async (req, res) => {
         idFb: req.body.idFb || '',
         name: req.body.name || '',
         email: req.body.email || '',
-        picture_profile: req.body.picture_profile || [],
+        picture_profile: req.body.picture_profile || '',
       }
       Customer.create(customer)
       console.log('New customer created')
@@ -76,12 +76,135 @@ export const getAll = (req, res) => {
   Order.find({}) // กรองข้อมูลเฉพาะที่ complete เป็น false
     .sort({ date_added: -1 }) // เรียงข้อมูลตามวันที่เพิ่มข้อมูลล่าสุดก่อน
     .exec()
-    .then((docs) => res.json(docs))
+    .then((docs) => {
+      res.json(docs)
+    })
     .catch((err) => {
       console.error('Error reading sale orders:', err)
       res.status(500).send(false)
     })
 }
+
+export const setOrderComplete = (req, res) => {
+  console.log("data for changing status complete");
+  const { id } = req.params;
+
+  Order.findById(id).exec()
+    .then((order) => {
+      if (!order) {
+        return res.status(404).json({ error: "Order not found" });
+      }
+
+      // Toggle the complete status
+      order.complete = !order.complete;
+
+      // Save the updated order
+      order.save()
+        .then((updatedOrder) => res.json(updatedOrder))
+        .catch((error) => res.status(500).json({ error: error.message }));
+    })
+    .catch((error) => res.status(500).json({ error: error.message }));
+};
+
+
+
+export const getOrderForReport = async (req, res) => {
+  console.log("data for create report");
+  const { id, date, month, year } = req.params; // Receive id, date, month, and year from request parameters
+
+  try {
+    const docs = await Order.find({
+      "orders._id": id,
+      "complete": true
+    }).exec();
+
+    if (docs.length === 0) {
+      return res.status(404).json({ error: "No orders found" });
+    }
+
+    let dailySales = 0;
+    let monthlySales = 0;
+    let yearlySales = 0;
+    let totalQuantity = 0;
+    let totalPrice = 0;
+    let productName = "";
+    const dailySalesData = Array(30).fill(0); // Array to hold sales data for the past 30 days
+    const last30Days = Array.from({ length: 30 }, (_, i) => {
+      console.log(year + "-" + month + "-" + date)
+      const Localdate = new Date(year + "-" + month + "-" + date);
+      Localdate.setDate(Localdate.getDate() - i);
+      return Localdate;
+    });
+    let cost = 0;
+
+    await Product.findById(id).exec()
+      .then((docs) => {
+        if (!docs) {
+          return res.status(404).json({ error: "Product not found" });
+        }
+        cost = docs.cost
+
+        productName = docs.name
+      })
+      .catch((error) => res.status(500).json({ error: error.message }));
+
+    docs.forEach((doc) => {
+      doc.orders.forEach((order) => {
+        if (order._id === id) {
+
+
+          productName = order.name;
+          const orderDate = new Date(doc.date_added);
+          const orderYear = orderDate.getFullYear();
+          const orderMonth = orderDate.getMonth() + 1; // Months are 0-indexed
+          const orderDay = orderDate.getDate();
+
+          totalQuantity += order.quantity;
+          totalPrice += order.quantity * order.price;
+
+          // Calculate sales for the past 30 days
+          last30Days.forEach((date, index) => {
+            if (
+              orderDate.getFullYear() === date.getFullYear() &&
+              orderDate.getMonth() === date.getMonth() &&
+              orderDate.getDate() === date.getDate()
+            ) {
+              dailySalesData[index] += order.quantity * order.price;
+            }
+          });
+
+          if (orderYear === parseInt(year)) {
+            yearlySales += order.quantity * order.price;
+            if (orderMonth === parseInt(month)) {
+              monthlySales += order.quantity * order.price;
+              if (orderDay === parseInt(date)) {
+                dailySales += order.quantity * order.price;
+              }
+            }
+          }
+        }
+      });
+    });
+    let profit = ((totalPrice)-(cost*totalQuantity))
+
+    res.json({
+      profit,
+      productName,
+      totalQuantity,
+      totalPrice,
+      dailySales,
+      monthlySales,
+      yearlySales,
+      dailySalesData: dailySalesData.reverse(), // Reverse the data to start from the oldest date
+      last30Days: last30Days.map(date => date.toISOString().split('T')[0]).reverse() // Send the dates as well
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
+
 
 export const getById = (req, res) => {
   let id = req.params.id
@@ -91,6 +214,7 @@ export const getById = (req, res) => {
 }
 
 export const update = async (req, res) => {
+  console.log(req.body)
   try {
     let form = req.body
 

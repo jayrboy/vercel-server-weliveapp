@@ -7,6 +7,8 @@ import {
   update,
   remove,
   paid,
+  getOrderForReport,
+  setOrderComplete,
 } from '../Controllers/sale-order-controller.js'
 import { auth } from '../middleware/auth.js'
 import { upload } from '../middleware/upload.js'
@@ -186,6 +188,133 @@ router.delete('/sale-order/:id', remove)
  *          description: Unauthorized
  */
 router.put('/sale-order/complete', paid)
+/**
+ * @swagger
+ * /api/sale-order/getorderforreport/{id}/{date}/{month}/{year}:
+ *    get:
+ *      tags: [Sale Order]
+ *      security:
+ *        - bearerAuth: []
+ *      summary: Retrieve orders for report
+ *      parameters:
+ *        - name: id
+ *          in: path
+ *          required: true
+ *          description: ID of the sale order
+ *          schema:
+ *            type: string
+ *        - name: date
+ *          in: path
+ *          required: true
+ *          description: Day of the date
+ *          schema:
+ *            type: string
+ *        - name: month
+ *          in: path
+ *          required: true
+ *          description: Month of the date
+ *          schema:
+ *            type: string
+ *        - name: year
+ *          in: path
+ *          required: true
+ *          description: Year of the date
+ *          schema:
+ *            type: string
+ *      responses:
+ *        200:
+ *          description: Success
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  dailySales:
+ *                    type: number
+ *                  monthlySales:
+ *                    type: number
+ *                  yearlySales:
+ *                    type: number
+ *        400:
+ *          description: Bad request
+ *        401:
+ *          description: Unauthorized
+ *        404:
+ *          description: Not found
+ */
+router.get('/sale-order/getorderforreport/:id/:date/:month/:year', getOrderForReport);
+/**
+ * @swagger
+ * /api/sale-order/getorderforreport/{id}/{date}/{month}/{year}:
+ *    get:
+ *      tags: [Sale Order]
+ *      security: 
+ *        - bearerAuth: []
+ *      summary: Retrieve orders for report
+ *      parameters:
+ *        - name: id
+ *          in: path
+ *          required: true
+ *          description: ID of the sale order
+ *          schema:
+ *            type: string
+ *        - name: date
+ *          in: path
+ *          required: true
+ *          description: Day of the date
+ *          schema:
+ *            type: string
+ *        - name: month
+ *          in: path
+ *          required: true
+ *          description: Month of the date
+ *          schema:
+ *            type: string
+ *        - name: year
+ *          in: path
+ *          required: true
+ *          description: Year of the date
+ *          schema:
+ *            type: string
+ *      responses:
+ *        200:
+ *          description: Success
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  productName:
+ *                    type: string
+ *                  totalQuantity:
+ *                    type: number
+ *                  totalPrice:
+ *                    type: number
+ *                  dailySales:
+ *                    type: number
+ *                  monthlySales:
+ *                    type: number
+ *                  yearlySales:
+ *                    type: number
+ *                  dailySalesData:
+ *                    type: array
+ *                    items:
+ *                      type: number
+ *                  last30Days:
+ *                    type: array
+ *                    items:
+ *                      type: string
+ *        400:
+ *          description: Bad request
+ *        401:
+ *          description: Unauthorized
+ *        404:
+ *          description: Not found
+ *        500:
+ *          description: Internal server error
+ */
+router.get('/sale-order/getorderforreport/:id/:date/:month/:year', getOrderForReport);
+
 
 export default router
 

@@ -9,6 +9,7 @@ import {
   paid,
   getOrderForReport,
   setOrderComplete,
+  setOrderSended,
 } from '../Controllers/sale-order-controller.js'
 import { auth } from '../middleware/auth.js'
 import { upload } from '../middleware/upload.js'
@@ -163,31 +164,146 @@ router.delete('/sale-order/:id', remove)
 
 /**
  * @swagger
- * /api/sale-order/complete:
- *    put:
- *      tags: [Sale Order]
- *      security:
- *        - bearerAuth: []
- *      summary: Update Status Paid of Sale Order
- *      requestBody:
- *        required: true
- *        content:
- *          application/json:
- *            schema:
- *              $ref: '#/components/schemas/SaleOrder'
- *      responses:
- *        200:
- *          description: Success
- *          content:
- *            application/json:
- *              schema:
- *                $ref: '#/components/schemas/SaleOrder'
- *        400:
- *          description: Bed request
- *        401:
- *          description: Unauthorized
+ * /api/sale-order/complete/{id}:
+ *   put:
+ *     tags:
+ *       - Sale Order
+ *     summary: Toggle the "complete" status of an order
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The order ID
+ *     responses:
+ *       200:
+ *         description: The updated order object
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 _id:
+ *                   type: string
+ *                 idFb:
+ *                   type: string
+ *                 name:
+ *                   type: string
+ *                 email:
+ *                   type: string
+ *                 picture_profile:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                 orders:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       product_id:
+ *                         type: string
+ *                       quantity:
+ *                         type: integer
+ *                 picture_payment:
+ *                   type: string
+ *                 address:
+ *                   type: string
+ *                 sub_district:
+ *                   type: string
+ *                 sub_area:
+ *                   type: string
+ *                 district:
+ *                   type: string
+ *                 postcode:
+ *                   type: integer
+ *                 tel:
+ *                   type: integer
+ *                 complete:
+ *                   type: boolean
+ *                 sended:
+ *                   type: boolean
+ *                 date_added:
+ *                   type: string
+ *                   format: date-time
+ *       404:
+ *         description: Order not found
+ *       500:
+ *         description: Internal server error
  */
-router.put('/sale-order/complete', paid)
+router.put('/sale-order/complete/:id', auth, setOrderComplete)
+
+/**
+ * @swagger
+ * /api/sale-order/sended/{id}:
+ *   put:
+ *     tags:
+ *       - Sale Order
+ *     summary: Toggle the "sended" status of an order
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The order ID
+ *     responses:
+ *       200:
+ *         description: The updated order object
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 _id:
+ *                   type: string
+ *                 idFb:
+ *                   type: string
+ *                 name:
+ *                   type: string
+ *                 email:
+ *                   type: string
+ *                 picture_profile:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                 orders:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       product_id:
+ *                         type: string
+ *                       quantity:
+ *                         type: integer
+ *                 picture_payment:
+ *                   type: string
+ *                 address:
+ *                   type: string
+ *                 sub_district:
+ *                   type: string
+ *                 sub_area:
+ *                   type: string
+ *                 district:
+ *                   type: string
+ *                 postcode:
+ *                   type: integer
+ *                 tel:
+ *                   type: integer
+ *                 complete:
+ *                   type: boolean
+ *                 sended:
+ *                   type: boolean
+ *                 date_added:
+ *                   type: string
+ *                   format: date-time
+ *       404:
+ *         description: Order not found
+ *       500:
+ *         description: Internal server error
+ */
+router.put('/sale-order/sended/:id', auth, setOrderSended)
+
 /**
  * @swagger
  * /api/sale-order/getorderforreport/{id}/{date}/{month}/{year}:
@@ -242,13 +358,16 @@ router.put('/sale-order/complete', paid)
  *        404:
  *          description: Not found
  */
-router.get('/sale-order/getorderforreport/:id/:date/:month/:year', getOrderForReport);
+router.get(
+  '/sale-order/getorderforreport/:id/:date/:month/:year',
+  getOrderForReport
+)
 /**
  * @swagger
  * /api/sale-order/getorderforreport/{id}/{date}/{month}/{year}:
  *    get:
  *      tags: [Sale Order]
- *      security: 
+ *      security:
  *        - bearerAuth: []
  *      summary: Retrieve orders for report
  *      parameters:
@@ -313,8 +432,10 @@ router.get('/sale-order/getorderforreport/:id/:date/:month/:year', getOrderForRe
  *        500:
  *          description: Internal server error
  */
-router.get('/sale-order/getorderforreport/:id/:date/:month/:year', getOrderForReport);
-
+router.get(
+  '/sale-order/getorderforreport/:id/:date/:month/:year',
+  getOrderForReport
+)
 
 export default router
 

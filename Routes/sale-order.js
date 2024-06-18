@@ -58,8 +58,6 @@ router.post(
  * /api/sale-order:
  *    get:
  *      tags: [Sale Order]
- *      security:
- *        - bearerAuth: []
  *      summary: Get All Sale Orders
  *      responses:
  *        200:
@@ -75,7 +73,7 @@ router.post(
  *        404:
  *          description: Not found
  */
-router.get('/sale-order', auth, getAll)
+router.get('/sale-order', getAll)
 
 /**
  * @swagger
@@ -103,15 +101,13 @@ router.get('/sale-order', auth, getAll)
  *        404:
  *          description: Not found
  */
-router.get('/sale-order/read/:id', auth, getById)
+router.get('/sale-order/read/:id', getById)
 
 /**
  * @swagger
  * /api/sale-order:
  *    put:
  *      tags: [Sale Order]
- *      security:
- *        - bearerAuth: []
  *      summary: Update Sale Order
  *      requestBody:
  *        required: true
@@ -138,8 +134,6 @@ router.put('/sale-order', upload.single('picture_payment'), update)
  * /api/sale-order/{id}:
  *    delete:
  *      tags: [Sale Order]
- *      security:
- *        - bearerAuth: []
  *      summary: Delete Sale Order By ID
  *      parameters:
  *        - in: path
@@ -160,7 +154,7 @@ router.put('/sale-order', upload.single('picture_payment'), update)
  *        404:
  *          description: Not found
  */
-router.delete('/sale-order/:id', remove)
+router.delete('/sale-order/:id', auth, remove)
 
 /**
  * @swagger

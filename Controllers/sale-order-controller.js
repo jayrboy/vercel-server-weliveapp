@@ -22,7 +22,7 @@ export const create = async (req, res) => {
         picture_profile: req.body.picture_profile || '',
       }
       Customer.create(customer)
-      console.log('New customer created')
+      // console.log('New customer created')
     }
 
     let form = req.body
@@ -41,6 +41,7 @@ export const create = async (req, res) => {
       tel: form.tel || 0,
       complete: form.complete || false,
       sended: form.sended || false,
+      express: form.express || '',
       date_added: form.date_added
         ? new Date(Date.parse(form.date_added))
         : new Date(),
@@ -61,7 +62,7 @@ export const create = async (req, res) => {
       res.status(200).send(existingOrder)
     } else {
       const newOrder = await Order.create(data)
-      console.log('Document saved new sale order')
+      // console.log('Document saved new sale order')
       res.status(200).send(newOrder)
     }
   } catch (error) {
@@ -87,50 +88,77 @@ export const getAll = (req, res) => {
 }
 
 export const setOrderComplete = (req, res) => {
-  console.log('data for changing status complete')
-  const { id } = req.params
+  console.log('data for changing status complete');
+  const { id } = req.params;
 
   Order.findById(id)
     .exec()
     .then((order) => {
       if (!order) {
-        return res.status(404).json({ error: 'Order not found' })
+        return res.status(404).json({ error: 'Order not found' });
       }
 
       // Toggle the complete status
-      order.complete = !order.complete
+      order.complete = !order.complete;
+      if (order.complete == false) {
+        order.sended = false;
+      }
 
-      // Save the updated order
-      order
-        .save()
-        .then((updatedOrder) => res.json(updatedOrder))
-        .catch((error) => res.status(500).json({ error: error.message }))
+      console.log("REQ Body Come : ", req.body.orders)
+      // Update the product stock quantity
+      const updateProductStock = async () => {
+        for (let item of req.body.orders) {
+          const product = await Product.findById(item.order_id).exec();
+          console.log("Get Product By Id REQ Body",product)
+          if (product) {
+            product.stock_quantity += order.complete ? -item.quantity : item.quantity;
+            await product.save();
+          }
+        }
+      };
+    
+
+      // Save the updated order and update product stock
+      order.save()
+        .then(async (updatedOrder) => {
+          await updateProductStock();
+          res.json(updatedOrder);
+        })
+        .catch((error) => res.status(500).json({ error: error.message }));
     })
-    .catch((error) => res.status(500).json({ error: error.message }))
-}
+    .catch((error) => res.status(500).json({ error: error.message }));
+};
 
 export const setOrderSended = (req, res) => {
-  console.log('data for changing status Sended')
-  const { id } = req.params
+  // console.log('data for changing status Sended', req);
+  const { id } = req.params;
 
   Order.findById(id)
     .exec()
     .then((order) => {
       if (!order) {
-        return res.status(404).json({ error: 'Order not found' })
+        return res.status(404).json({ error: 'Order not found' });
       }
 
-      // Toggle the complete status
-      order.sended = !order.sended
+      // Toggle the sended status
+      order.sended = !order.sended;
+      if (order.sended == false) {
+        order.express = "ไม่ได้ระบุรหัสขนส่ง";
+      } else {
+        // Update express if provided
+        if (req.body.express) {
+          order.express = req.body.express;
+        }
+      }
 
       // Save the updated order
       order
         .save()
         .then((updatedOrder) => res.json(updatedOrder))
-        .catch((error) => res.status(500).json({ error: error.message }))
+        .catch((error) => res.status(500).json({ error: error.message }));
     })
-    .catch((error) => res.status(500).json({ error: error.message }))
-}
+    .catch((error) => res.status(500).json({ error: error.message }));
+};
 
 export const getOrderForReport = async (req, res) => {
   console.log('data for create report')

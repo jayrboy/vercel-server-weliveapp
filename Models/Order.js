@@ -16,6 +16,7 @@ let orderSchema = new mongoose.Schema({
   date_added: Date,
   complete: Boolean,
   sended: Boolean,
+  express: String,
 })
 
 let Order = mongoose.model('Order', orderSchema)

@@ -41,6 +41,7 @@ export const create = async (req, res) => {
       tel: form.tel || 0,
       complete: form.complete || false,
       sended: form.sended || false,
+      express: form.express || '',
       date_added: form.date_added
         ? new Date(Date.parse(form.date_added))
         : new Date(),
@@ -99,6 +100,10 @@ export const setOrderComplete = (req, res) => {
 
       // Toggle the complete status
       order.complete = !order.complete
+      if(order.complete == false){
+        order.sended = false
+      }
+      console.log(order.complete)
 
       // Save the updated order
       order
@@ -110,27 +115,35 @@ export const setOrderComplete = (req, res) => {
 }
 
 export const setOrderSended = (req, res) => {
-  console.log('data for changing status Sended')
-  const { id } = req.params
+  console.log('data for changing status Sended', req);
+  const { id } = req.params;
 
   Order.findById(id)
     .exec()
     .then((order) => {
       if (!order) {
-        return res.status(404).json({ error: 'Order not found' })
+        return res.status(404).json({ error: 'Order not found' });
       }
 
-      // Toggle the complete status
-      order.sended = !order.sended
+      // Toggle the sended status
+      order.sended = !order.sended;
+      if (order.sended == false) {
+        order.express = "ไม่ได้ระบุรหัสขนส่ง";
+      } else {
+        // Update express if provided
+        if (req.body.express) {
+          order.express = req.body.express;
+        }
+      }
 
       // Save the updated order
       order
         .save()
         .then((updatedOrder) => res.json(updatedOrder))
-        .catch((error) => res.status(500).json({ error: error.message }))
+        .catch((error) => res.status(500).json({ error: error.message }));
     })
-    .catch((error) => res.status(500).json({ error: error.message }))
-}
+    .catch((error) => res.status(500).json({ error: error.message }));
+};
 
 export const getOrderForReport = async (req, res) => {
   console.log('data for create report')

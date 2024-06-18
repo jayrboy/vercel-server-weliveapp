@@ -231,7 +231,7 @@ router.delete('/sale-order/:id', remove)
  *       500:
  *         description: Internal server error
  */
-router.put('/sale-order/complete/:id', auth, setOrderComplete)
+router.put('/sale-order/complete/:id', setOrderComplete)
 
 /**
  * @swagger
@@ -302,7 +302,7 @@ router.put('/sale-order/complete/:id', auth, setOrderComplete)
  *       500:
  *         description: Internal server error
  */
-router.put('/sale-order/sended/:id', auth, setOrderSended)
+router.put('/sale-order/sended/:id', setOrderSended)
 
 /**
  * @swagger

@@ -13,7 +13,9 @@ let received_updates = []
 /*-------------- https://ngrok-free.app/webhooks --------------*/
 
 router.get('/', (req, res) => {
-  res.send('<pre>' + JSON.stringify(received_updates, null, 2) + '</pre>')
+  res
+    .status(200)
+    .send('<pre>' + JSON.stringify(received_updates, null, 2) + '</pre>')
 })
 
 // //TODO: Webhooks Test

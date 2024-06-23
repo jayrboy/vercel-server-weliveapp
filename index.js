@@ -10,8 +10,11 @@ import swaggerUi from 'swagger-ui-express'
 
 import morgan from 'morgan'
 import cookieParser from 'cookie-parser'
+
 import xhub from 'express-x-hub'
 import webhooks from './tests/webhooks.js'
+
+import graphApi from './tests/graph-api.js'
 
 const app = express()
 
@@ -62,6 +65,7 @@ if (process.env.NODE_ENV != 'production') {
   })
 }
 app.use('/webhooks', webhooks)
+app.use('/graph-api', graphApi)
 
 /* --- API Endpoints --- */
 const files = fs.readdirSync('./Routes')

@@ -1,13 +1,21 @@
 import express from 'express'
+import jwt from 'jsonwebtoken'
+
 import {
   getAppAccessToken,
   debugToken,
   getPagesBasedOnToken,
 } from '../services/fb.js'
 
+import User from '../Models/User.js'
+
 // http://localhost:8000/api/fb-sdk
 
 const router = express.Router()
+
+router.use((req, res, next) => {
+  next()
+})
 
 /**
  * @swagger
@@ -39,8 +47,25 @@ const router = express.Router()
  *                   type: string
  *                   example: "EAAGAtKWXZCNsBO8iIiKAmTq3TtwyfzZBNWvMOxs7wLDfywmUNCAh3HjRMH5T9ZCI9ZBLAO8Dfbv8cdgL1bFg79ex4ndU7MwI9wUlkFlrLmxF1ZAxXunZCb1Tq9atd6fdahu6fVZBE1TNEPfDiEo2RW0cSLoHRu5zZCuKo3mxVpsiD1KrxYhkOVQLNcMvFg8McZBvqNXZA4aMZAQzLWXvnE7DrShkyIaxZASCWYvhFgZDZD"
  */
-router.get('/fb-sdk', async (req, res) => {
-  const appAccessToken = await getAppAccessToken()
+router.post('/fb-sdk', async (req, res) => {
+  let form = req.body
+  let userData = {
+    userID: req.body.id,
+    name: req.body.name,
+    picture: req.body.picture,
+    email: req.body.email,
+  }
+
+  let user = await User.findOneAndUpdate({ username: form.id }, { new: true })
+  if (user) {
+    console.log('User updated')
+  } else {
+    console.log('New a User saved:')
+    user = new User(userData)
+    await user.save()
+  }
+
+  const appAccessToken = await getAppAccessToken() //422988337380571|Wwmtig1WYSo0Ij9wkoxD9MB0kVc
 
   const scopes = await debugToken(appAccessToken, req.query.token)
 
@@ -48,7 +73,15 @@ router.get('/fb-sdk', async (req, res) => {
 
   console.log(scopes)
 
-  res.json({ scopes, accessToken: pages?.[0].access_token })
+  let payload = {
+    user,
+  }
+
+  // generate toke
+  jwt.sign(payload, 'jwtsecret', { expiresIn: '1d' }, (err, token) => {
+    if (err) throw err
+    res.json({ token, payload, scopes, accessToken: pages?.[0].access_token })
+  })
 })
 
 export default router

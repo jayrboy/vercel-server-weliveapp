@@ -70,7 +70,6 @@ export const getPagesBasedOnToken = async (userToken) => {
 
   throw new Error('Something went bad')
 }
-
 /*
 ข้อมูลเพจของผู้ใช้
 GET: https://graph.facebook.com/v20.0/me/accounts?access_token=${USER_ACCESS_TOKEN}

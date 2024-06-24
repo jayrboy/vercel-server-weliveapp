@@ -2,6 +2,8 @@ import 'dotenv/config'
 import express from 'express'
 import axios from 'axios'
 
+import xhub from 'express-x-hub'
+
 const router = express.Router()
 
 // Define a message verify token (custom)
@@ -11,6 +13,8 @@ let received_updates = []
 
 //! Meta เปิด Mode: Live Preview สำหรับ Test
 /*-------------- https://ngrok-free.app/webhooks --------------*/
+
+router.use(xhub({ algorithm: 'sha256', secret: process.env.APP_SECRET }))
 
 router.get('/', (req, res) => {
   res

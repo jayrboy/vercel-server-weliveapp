@@ -11,7 +11,6 @@ import swaggerUi from 'swagger-ui-express'
 import morgan from 'morgan'
 import cookieParser from 'cookie-parser'
 
-import xhub from 'express-x-hub'
 import webhooks from './tests/webhooks.js'
 
 const app = express()
@@ -28,7 +27,7 @@ const options = {
     },
     servers: [
       {
-        url: 'http://localhost:8000',
+        url: `http://localhost:${process.env.PORT}`,
       },
     ],
     components: {
@@ -48,7 +47,6 @@ const swagger = swaggerJsdoc(options)
 
 /* --- Middleware --- */
 app.use(cors())
-app.use(xhub({ algorithm: 'sha256', secret: process.env.APP_SECRET }))
 app.use(express.urlencoded({ extended: true })) // body-parser
 app.use(express.json()) // parser-json data sent in request.body
 app.use(cookieParser())

@@ -72,7 +72,7 @@ export const login = async (req, res) => {
       },
     }
 
-    jwt.sign(payload, 'jwtsecret', { expiresIn: '1d' }, (error, token) => {
+    jwt.sign(payload, 'jwtsecret', { expiresIn: '1h' }, (error, token) => {
       if (error) throw error
       if (req.body.save) {
         let age = 60 * 60 * 1000 * 24 * 30 // 30 day
@@ -98,39 +98,39 @@ export const login = async (req, res) => {
   }
 }
 
-export const loginFB = async (req, res) => {
-  try {
-    const { userID, name, email, picture } = req.body
-    let userData = {
-      username: userID,
-      name: name,
-      email: email,
-      picture: picture,
-    }
+// export const loginFB = async (req, res) => {
+//   try {
+//     const { userID, name, email, picture } = req.body
+//     let userData = {
+//       username: userID,
+//       name: name,
+//       email: email,
+//       picture: picture,
+//     }
 
-    let user = await User.findOneAndUpdate({ username: userID }, { new: true })
-    if (user) {
-      console.log('User updated')
-    } else {
-      console.log('User saved:')
-      user = new User(userData)
-      await user.save()
-    }
+//     let user = await User.findOneAndUpdate({ username: userID }, { new: true })
+//     if (user) {
+//       console.log('User updated')
+//     } else {
+//       console.log('User saved:')
+//       user = new User(userData)
+//       await user.save()
+//     }
 
-    let payload = {
-      user,
-    }
+//     let payload = {
+//       user,
+//     }
 
-    // generate toke
-    jwt.sign(payload, 'jwtsecret', { expiresIn: '1d' }, (err, token) => {
-        if (err) throw err
-      res.json({ token, payload })
-    })
-  } catch (err) {
-    console.log(err)
-    res.json({ token, payload })
-  }
-}
+//     // generate toke
+//     jwt.sign(payload, 'jwtsecret', { expiresIn: '1d' }, (err, token) => {
+//         if (err) throw err
+//       res.json({ token, payload })
+//     })
+//   } catch (err) {
+//     console.log(err)
+//     res.json({ token, payload })
+//   }
+// }
 
 export const getCookies = (req, res) => {
   let u = req.cookies['username'] || ''

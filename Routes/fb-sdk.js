@@ -50,7 +50,7 @@ router.use((req, res, next) => {
 router.post('/fb-sdk', async (req, res) => {
   let form = req.body
   let userData = {
-    userID: req.body.id,
+    username: req.body.id,
     name: req.body.name,
     picture: req.body.picture,
     email: req.body.email,

@@ -3,7 +3,6 @@ import {
   generateToken,
   register,
   login,
-  loginFB,
   getCookies,
 } from '../Controllers/auth-controller.js'
 import { checkUser } from '../Controllers/user-controller.js'
@@ -132,8 +131,7 @@ router.post('/register', register)
  */
 router.post('/login', login)
 
-//TODO: Development
-router.post('/login-facebook', loginFB)
+// router.post('/login-facebook', loginFB)
 
 router.get('/cookie/get', getCookies)
 

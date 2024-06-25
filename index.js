@@ -46,11 +46,7 @@ const options = {
 const swagger = swaggerJsdoc(options)
 
 /* --- Middleware --- */
-app.use(
-  cors({
-    origin: 'https://weliveapp.netlify.app',
-  })
-)
+app.use(cors())
 app.use(express.urlencoded({ extended: true })) // body-parser
 app.use(express.json()) // parser-json data sent in request.body
 app.use(cookieParser())

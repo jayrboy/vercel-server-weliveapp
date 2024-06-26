@@ -10,7 +10,7 @@ export const generateToken = async (req, res) => {
         success: true,
       },
     }
-    jwt.sign(payload, 'jwtsecret', { expiresIn: '1h' }, (error, token) => {
+    jwt.sign(payload, 'jwtsecret', { expiresIn: '1d' }, (error, token) => {
       if (error) throw error
       res.status(200).json({ token, payload })
     })
@@ -72,7 +72,7 @@ export const login = async (req, res) => {
       },
     }
 
-    jwt.sign(payload, 'jwtsecret', { expiresIn: '1h' }, (error, token) => {
+    jwt.sign(payload, 'jwtsecret', { expiresIn: '1d' }, (error, token) => {
       if (error) throw error
       if (req.body.save) {
         let age = 60 * 60 * 1000 * 24 * 30 // 30 day

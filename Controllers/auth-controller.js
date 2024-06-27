@@ -50,7 +50,10 @@ export const login = async (req, res) => {
     let password = req.body.password || ''
 
     // Check if the user exists
-    let user = await User.findOne({ username })
+    let user = await User.findOneAndUpdate(
+      { username },
+      { useFindAndModify: false }
+    )
     if (!user) {
       return res.status(404).send('User Not Found!!!')
     }

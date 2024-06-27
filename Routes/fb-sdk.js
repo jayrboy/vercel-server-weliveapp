@@ -10,7 +10,7 @@ import {
 import User from '../Models/User.js'
 
 // http://localhost:8000/api/fb-sdk
-// 
+//
 
 const router = express.Router()
 
@@ -57,7 +57,10 @@ router.post('/fb-sdk', async (req, res) => {
     email: req.body.email,
   }
 
-  let user = await User.findOneAndUpdate({ username: form.id }, { new: true })
+  let user = await User.findOneAndUpdate(
+    { username: form.id },
+    { useFindAndModify: false }
+  )
   if (user) {
     console.log('User updated')
   } else {

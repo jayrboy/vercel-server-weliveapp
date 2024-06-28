@@ -6,14 +6,18 @@ export const generateToken = async (req, res) => {
   try {
     // Generate token
     const payload = {
-      user: {
-        success: true,
-      },
+      success: true,
     }
-    jwt.sign(payload, 'jwtsecret', { expiresIn: '1d' }, (error, token) => {
-      if (error) throw error
-      res.status(200).json({ token, payload })
-    })
+
+    jwt.sign(
+      payload,
+      process.env.JWT_SECRET,
+      { expiresIn: '1d' },
+      (error, token) => {
+        if (error) throw error
+        res.status(200).json({ token, payload })
+      }
+    )
   } catch (error) {
     res.status(500).send({ message: error.message, success: false })
   }
@@ -75,26 +79,31 @@ export const login = async (req, res) => {
       },
     }
 
-    jwt.sign(payload, 'jwtsecret', { expiresIn: '1d' }, (error, token) => {
-      if (error) throw error
-      if (req.body.save) {
-        let age = 60 * 60 * 1000 * 24 * 30 // 30 day
-        res.cookie('username', username, { maxAge: age })
-        res.cookie('password', password, { maxAge: age })
-        let save = req.body.save
-        res.cookie('save', save, { maxAge: age })
-        console.log('Saved to Cookies')
+    jwt.sign(
+      payload,
+      process.env.JWT_SECRET,
+      { expiresIn: '1d' },
+      (error, token) => {
+        if (error) throw error
+        if (req.body.save) {
+          let age = 60 * 60 * 1000 * 24 * 30 // 30 day
+          res.cookie('username', username, { maxAge: age })
+          res.cookie('password', password, { maxAge: age })
+          let save = req.body.save
+          res.cookie('save', save, { maxAge: age })
+          console.log('Saved to Cookies')
 
-        // ถ้าไม่ได้เลือกบันทึกข้อมูล แต่อาจมีข้อมูลเดิมเก็บเอาไว้
-        // ดังนั้น เราอาจลบข้อมูลเหล่านั้นออกไป (ถึงไม่มีก็ไม่เกิด Error)
-      } else {
-        res.clearCookie('username')
-        res.clearCookie('password')
-        res.clearCookie('save')
-        console.log('Not stored in cookies')
+          // ถ้าไม่ได้เลือกบันทึกข้อมูล แต่อาจมีข้อมูลเดิมเก็บเอาไว้
+          // ดังนั้น เราอาจลบข้อมูลเหล่านั้นออกไป (ถึงไม่มีก็ไม่เกิด Error)
+        } else {
+          res.clearCookie('username')
+          res.clearCookie('password')
+          res.clearCookie('save')
+          console.log('Not stored in cookies')
+        }
+        res.json({ token, payload })
       }
-      res.json({ token, payload })
-    })
+    )
   } catch (error) {
     console.log({ message: error })
     res.status(500).send('Internal Server Error')
@@ -125,7 +134,7 @@ export const login = async (req, res) => {
 //     }
 
 //     // generate toke
-//     jwt.sign(payload, 'jwtsecret', { expiresIn: '1d' }, (err, token) => {
+//     jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1d' }, (err, token) => {
 //         if (err) throw err
 //       res.json({ token, payload })
 //     })

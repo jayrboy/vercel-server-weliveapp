@@ -75,18 +75,25 @@ router.post('/fb-sdk', async (req, res) => {
 
   const pages = await getPagesBasedOnToken(req.query.token)
 
-  console.log(scopes)
+  // console.log(scopes)
 
   let payload = {
     user,
+    pages: pages,
+    // accessToken: pages?.[0].access_token,
+    scopes,
   }
 
   // generate toke
-  jwt.sign(payload, 'jwtsecret', { expiresIn: '1d' }, (err, token) => {
-    if (err) throw err
-    // res.json({ token, payload, scopes, accessToken: pages?.[0].access_token })
-    res.json({ token, payload, scopes, pages: pages?.[0] })
-  })
+  jwt.sign(
+    payload,
+    process.env.JWT_SECRET,
+    { expiresIn: '1d' },
+    (err, token) => {
+      if (err) throw err
+      res.json({ token, payload })
+    }
+  )
 })
 
 export default router

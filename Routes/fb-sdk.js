@@ -84,7 +84,8 @@ router.post('/fb-sdk', async (req, res) => {
   // generate toke
   jwt.sign(payload, 'jwtsecret', { expiresIn: '1d' }, (err, token) => {
     if (err) throw err
-    res.json({ token, payload, scopes, accessToken: pages?.[0].access_token })
+    // res.json({ token, payload, scopes, accessToken: pages?.[0].access_token })
+    res.json({ token, payload, scopes, pages: pages?.[0] })
   })
 })
 

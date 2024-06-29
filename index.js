@@ -1,6 +1,4 @@
 import 'dotenv/config'
-import http from 'http'
-import https from 'https'
 import express from 'express'
 import os from 'os'
 import fs from 'fs'
@@ -76,30 +74,18 @@ app.use((req, res) => {
   res.status(404).type('text/plain').send('404 Not Found')
 })
 
-/* --- HTTP Server (Optional, Redirect to HTTPS) --- */
-const httpPort = process.env.PORT || 8000
+/* --- Server --- */
+const port = process.env.PORT || 8000
+const runApp = () => {
+  try {
+    app.listen(port, () => {
+      console.log('Server running at http://localhost:%s', port)
+    })
+  } catch (error) {
+    console.log(error)
+    process.exit(1)
+  }
+}
 
-const httpServer = http.createServer((req, res) => {
-  res.writeHead(301, { Location: `https://${req.headers.host}${req.url}` })
-  res.end()
-})
-
-httpServer.listen(httpPort, () => {
-  console.log(`HTTP Server running at http://localhost:${httpPort}`)
-})
-
-/* --- HTTPS Server --- */
-const httpsPort = 8443 // Choose a suitable HTTPS port
-
-// const credentials = {
-//   key: fs.readFileSync('./private.key'),
-//   cert: fs.readFileSync('./certificate.crt'),
-// }
-
-// const httpsServer = https.createServer(credentials, app)
-
-// httpsServer.listen(httpsPort, () => {
-//   console.log(`HTTPS Server running at https://localhost:${httpsPort}`)
-// })
-
+runApp()
 connectDB()

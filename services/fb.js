@@ -5,6 +5,7 @@ const APP_SECRET = process.env.APP_SECRET
 
 const FACEBOOK_GRAPH_API = 'https://graph.facebook.com/v20.0'
 
+//? https://developers.facebook.com/docs/facebook-login/guides/access-tokens/get-long-lived/?locale=th_TH
 export const getUserLongLivedAccessToken = async (token) => {
   const response = await fetch(
     `${FACEBOOK_GRAPH_API}/oauth/access_token?grant_type=fb_exchange_token&client_id=${APP_ID}&client_secret=${APP_SECRET}&fb_exchange_token=${token}`

@@ -5,6 +5,7 @@ import {
   getAppAccessToken,
   debugToken,
   getPagesBasedOnToken,
+  postPageOnToken,
 } from '../services/fb.js'
 
 import User from '../Models/User.js'
@@ -94,6 +95,52 @@ router.post('/fb-sdk', async (req, res) => {
       res.json({ token, payload })
     }
   )
+})
+
+/**
+ * @swagger
+ * /api/fb-page-post:
+ *   post:
+ *     tags: [Facebook SDK]
+ *     summary: โพสต์ข้อความไปยัง Facebook Page
+ *     description: โพสต์ข้อความไปยัง Facebook Page โดยใช้ pageId, message และ accessToken
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               pageId:
+ *                 type: string
+ *                 description: Facebook Page ID
+ *                 example: '123456789012345'
+ *               message:
+ *                 type: string
+ *                 description: ข้อความที่ต้องการโพสต์
+ *                 example: 'Hello, this is a test post!'
+ *               accessToken:
+ *                 type: string
+ *                 description: Facebook access token
+ *                 example: 'your-access-token'
+ *     responses:
+ *       200:
+ *         description: Success
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                   description: Facebook post ID
+ *                   example: '349127668282384_122111581298360332'
+ */
+router.post('/fb-page-post', async (req, res) => {
+  let { pageId, message, accessToken } = req.body
+  const postId = await postPageOnToken(pageId, message, accessToken)
+
+  res.status(200).json(postId) // { "id": "349127668282384_122111581298360332" }
 })
 
 export default router

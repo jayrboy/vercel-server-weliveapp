@@ -98,3 +98,19 @@ return data.data
     }
 ]
 */
+
+//? https://developers.facebook.com/docs/facebook-login/guides/access-tokens (token การเข้าถึง Pages)
+//TODO: (3)
+export const postPageOnToken = async (pageId, message, userToken) => {
+  const response = await fetch(
+    `${FACEBOOK_GRAPH_API}/${pageId}/feed?message=${message}&access_token=${userToken}`
+  )
+
+  const data = await response.json()
+
+  if (response.ok) {
+    return data.data
+  }
+
+  throw new Error('Post page failed')
+}

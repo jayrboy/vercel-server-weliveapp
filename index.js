@@ -11,7 +11,7 @@ import swaggerUi from 'swagger-ui-express'
 import morgan from 'morgan'
 import cookieParser from 'cookie-parser'
 
-import webhooks from './tests/webhooks.js'
+import webhooks from './services/webhooks.js'
 
 const app = express()
 

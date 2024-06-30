@@ -115,3 +115,26 @@ export const postPageOnToken = async (pageId, message, userToken) => {
 
   throw new Error('Post page failed')
 }
+
+//? https://developers.facebook.com/docs/live-video-api/ (API วิดีโอถ่ายทอดสด)
+// ฟังก์ชัน เปิด Live Video โดยที่ /me คือ ID สำหรับ User หรือ Page
+export const openLiveVideo = async (me, title, description, accessToken) => {
+  try {
+    const response = await fetch(
+      `${FACEBOOK_GRAPH_API}/${me}/live_videos?status=LIVE_NOW&title=${title}&description=${description}&access_token=${accessToken}`,
+      {
+        method: 'POST',
+      }
+    )
+
+    const data = await response.json()
+
+    if (response.ok) {
+      return data
+    } else {
+      throw data.error
+    }
+  } catch (error) {
+    throw error
+  }
+}

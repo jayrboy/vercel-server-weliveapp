@@ -6,6 +6,7 @@ import {
   debugToken,
   getPagesBasedOnToken,
   postPageOnToken,
+  openLiveVideo,
 } from '../services/fb.js'
 
 import User from '../Models/User.js'
@@ -141,6 +142,99 @@ router.post('/fb-page-post', async (req, res) => {
   const postId = await postPageOnToken(pageId, message, accessToken)
 
   res.status(200).json(postId) // "349127668282384_122111581298360332"
+})
+
+/**
+ * @swagger
+ * /api/fb-live-video:
+ *   post:
+ *     tags: [Facebook SDK]
+ *     summary: Start a live video on Facebook
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               pageId:
+ *                 type: string
+ *                 description: The ID of the Facebook page
+ *                 example: "123456789012345"
+ *               title:
+ *                 type: string
+ *                 description: The title of the live video
+ *                 example: "My Live Video"
+ *               description:
+ *                 type: string
+ *                 description: The description of the live video
+ *                 example: "This is a live video description."
+ *               accessToken:
+ *                 type: string
+ *                 description: The access token for the Facebook page
+ *                 example: "EAAGm0PX4ZCpsBAMZCZC4uLZAi6ZCZAaZBZCNtZAvZAmEHYxZAeZBCZB0ZAyZCBZAXzFZCFmZD"
+ *     responses:
+ *       200:
+ *         description: The response from the Facebook API
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                   description: The ID of the live video
+ *                   example: "349127668282384_122111581298360332"
+ *       400:
+ *         description: Bad Request - Permissions error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: object
+ *                   properties:
+ *                     message:
+ *                       type: string
+ *                       example: "Permissions error"
+ *                     type:
+ *                       type: string
+ *                       example: "OAuthException"
+ *                     code:
+ *                       type: integer
+ *                       example: 200
+ *                     error_subcode:
+ *                       type: integer
+ *                       example: 1363120
+ *                     is_transient:
+ *                       type: boolean
+ *                       example: false
+ *                     error_user_title:
+ *                       type: string
+ *                       example: "คุณไม่มีสิทธิ์เริ่มถ่ายทอดสด"
+ *                     error_user_msg:
+ *                       type: string
+ *                       example: "โปรไฟล์ของคุณต้องมีอายุอย่างน้อย 60 วันจึงจะสามารถเริ่มถ่ายทอดสดบน Facebook ได้ เรียนรู้เพิ่มเติมที่ https://www.facebook.com/business/help/216491699144904"
+ *                     fbtrace_id:
+ *                       type: string
+ *                       example: "A385w0SaV9K6SrflkwHfGFI"
+ */
+router.post('/fb-live-video', async (req, res) => {
+  let { pageId, title, description, accessToken } = req.body
+
+  try {
+    const response = await openLiveVideo(
+      pageId,
+      title,
+      description,
+      accessToken
+    )
+    res.status(200).json(response)
+  } catch (error) {
+    // res.status(400).json(error)
+    res.status(400).json(false)
+  }
 })
 
 export default router

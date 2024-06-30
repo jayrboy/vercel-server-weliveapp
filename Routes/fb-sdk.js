@@ -7,6 +7,7 @@ import {
   getPagesBasedOnToken,
   postPageOnToken,
   openLiveVideo,
+  getUserLongLivedAccessToken,
 } from '../services/fb.js'
 
 import User from '../Models/User.js'
@@ -15,10 +16,6 @@ import User from '../Models/User.js'
 //
 
 const router = express.Router()
-
-router.use((req, res, next) => {
-  next()
-})
 
 /**
  * @swagger
@@ -73,14 +70,17 @@ router.post('/fb-sdk', async (req, res) => {
 
   const appAccessToken = await getAppAccessToken() //422988337380571|Wwmtig1WYSo0Ij9wkoxD9MB0kVc
 
-  const scopes = await debugToken(appAccessToken, req.query.token)
+  const userAccessToken = await getUserLongLivedAccessToken(req.query.token)
 
-  const pages = await getPagesBasedOnToken(req.query.token)
+  const scopes = await debugToken(appAccessToken, userAccessToken)
+
+  const pages = await getPagesBasedOnToken(userAccessToken)
 
   // console.log(scopes)
 
   let payload = {
     user,
+    userAccessToken: userAccessToken,
     pages: pages,
     // accessToken: pages?.[0].access_token,
     scopes,

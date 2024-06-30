@@ -5,6 +5,19 @@ const APP_SECRET = process.env.APP_SECRET
 
 const FACEBOOK_GRAPH_API = 'https://graph.facebook.com/v20.0'
 
+export const getUserLongLivedAccessToken = async (token) => {
+  const response = await fetch(
+    `${FACEBOOK_GRAPH_API}/oauth/access_token?grant_type=fb_exchange_token&client_id=${APP_ID}&client_secret=${APP_SECRET}&fb_exchange_token=${token}`
+  )
+  const data = await response.json()
+
+  if (response.ok) {
+    return data.access_token
+  }
+
+  throw new Error('User access token failed')
+}
+
 //? https://developers.facebook.com/docs/facebook-login/guides/access-tokens/ (token การเข้าถึง App)
 //TODO: (1) สร้างคำขอไปยัง API ของ Facebook ในนามของแอป ที่ไม่ใช่ในนามของผู้ใช้
 /* หลังได้รับ response ซึ่งจะสามารถใช้ เพื่อปรับแต่ง parameters ของแอป
@@ -104,7 +117,7 @@ return data.data
 export const postPageOnToken = async (pageId, message, userToken) => {
   const response = await fetch(
     `${FACEBOOK_GRAPH_API}/${pageId}/feed?message=${message}&access_token=${userToken}`,
-    { method: 'POST' }
+    { method: 'POST', headers: { 'Content-Type': 'application/json' } }
   )
 
   const data = await response.json()

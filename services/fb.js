@@ -103,13 +103,14 @@ return data.data
 //TODO: (3)
 export const postPageOnToken = async (pageId, message, userToken) => {
   const response = await fetch(
-    `${FACEBOOK_GRAPH_API}/${pageId}/feed?message=${message}&access_token=${userToken}`
+    `${FACEBOOK_GRAPH_API}/${pageId}/feed?message=${message}&access_token=${userToken}`,
+    { method: 'POST' }
   )
 
   const data = await response.json()
 
   if (response.ok) {
-    return data.data
+    return data.id
   }
 
   throw new Error('Post page failed')

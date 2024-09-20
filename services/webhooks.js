@@ -6,8 +6,7 @@ const router = express.Router()
 
 // Define a message verify token (custom)
 const WEBHOOKS_VERIFY_TOKEN = process.env.WEBHOOKS_VERIFY_TOKEN || 'message001'
-const PAGE_ACCESS_TOKEN =
-  'EAAGAtKWXZCNsBO4ZAmoGfvM70kGkan5QcWwx7ujcnZAlw7KK8F05BnrZBTb8uCObKEqZAmceZBkoHEnAIEFab1XbgZBxaQAuzdcgakZAZCwQXSnlNEpU5qr7qt4dw3skL6MQZCfZC4MicP1zbQ8aLKpyn2Jv2s6zcfTC5dlK7usjZBvVnH1REqKln66BZBxCNVYxhb5jDU5Y75t0THPvoWlrhhfeC2OhkkgXtw7DzNqgZD'
+const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN
 let received_updates = []
 
 //! Meta เปิด Mode: Live Preview สำหรับ Test
@@ -68,19 +67,30 @@ router.post('/chatbot', async (req, res) => {
 })
 
 // Handle Message Events
-function handleMessage(sender_psid, received_message) {
+async function handleMessage(sender_psid, received_message) {
   let response
 
-  // Check if the message contains text
   if (received_message.text) {
-    //  Create the payload for a basic text message
-    response = {
-      text: `You sent the message "${received_message.text}". Now send me an image!`,
+    if (
+      received_message.text.includes('ออเดอร์') ||
+      received_message.text.toLowerCase().includes('order')
+    ) {
+      let orderId = '666fae8fd4f0cde928d4ecfa' // Replace with actual order ID or logic to fetch it
+      let orderUrl = `https://weliveapp.netlify.app/order/${orderId}`
+
+      response = {
+        text: `นี่คือลิงก์ออเดอร์ของคุณ: ${orderUrl}`,
+      }
+    } else {
+      response = {
+        text: `คุณส่งข้อความ "${received_message.text}" มา กรุณาส่งรูปภาพสินค้าที่ต้องการ หรือพิมพ์ "order" เพื่อดูคำสั่งซื้อของคุณลูกค้า`,
+      }
     }
   } else if (received_message.attachments) {
-    // Gate the URL of the message attachment
+    // Get the URL of the message attachment
     let attachment_url = received_message.attachments[0].payload.url
 
+    // Respond with a generic template asking for confirmation
     response = {
       attachment: {
         type: 'template',
@@ -88,18 +98,18 @@ function handleMessage(sender_psid, received_message) {
           template_type: 'generic',
           elements: [
             {
-              title: 'Is this the right picture?',
-              subtitle: 'Tap a button to answer.',
+              title: 'นี่คือสินค้าที่ต้องการใช่หรือไม่?',
+              subtitle: 'กดปุ่มเพื่อตอบคำถาม',
               image_url: attachment_url,
               buttons: [
                 {
                   type: 'postback',
-                  title: 'Yes!',
+                  title: 'ใช่!',
                   payload: 'yes',
                 },
                 {
                   type: 'postback',
-                  title: 'No!',
+                  title: 'ไม่!',
                   payload: 'no',
                 },
               ],
@@ -111,7 +121,7 @@ function handleMessage(sender_psid, received_message) {
   }
 
   // Send the response message
-  callSendAPI(sender_psid, response)
+  await callSendAPI(sender_psid, response)
 }
 
 // Handle "messaging_postback" Events
@@ -123,16 +133,20 @@ function handlePostBack(sender_psid, received_postback) {
 
   // Set the response based on the postback payload
   if (payload === 'yes') {
-    response = { text: 'Thanks!' }
+    response = {
+      text: 'คำสั่งซื้อของคุณได้รับการยืนยันแล้ว เราจะดำเนินการโดยเร็วที่สุด',
+    }
   } else if (payload === 'no') {
-    response = { text: 'Oops, try sending another image.' }
+    response = {
+      text: 'คำสั่งซื้อของคุณถูกยกเลิกแล้ว แจ้งให้เราทราบหากคุณต้องการความช่วยเหลือใด ๆ',
+    }
   }
   // Send the message to acknowledge the postback
   callSendAPI(sender_psid, response)
 }
 
 // Send Response Message via the Send API
-async function callSendAPI(sender_psid, response) {
+export async function callSendAPI(sender_psid, response) {
   // Construct the message body
   let request_body = {
     recipient: {
@@ -143,7 +157,7 @@ async function callSendAPI(sender_psid, response) {
   // Send the HTTP request to the Messenger Platform
   try {
     await axios.post(
-      'https://graph.facebook.com/v19.0/me/messages',
+      'https://graph.facebook.com/v20.0/me/messages',
       request_body,
       {
         params: {

@@ -1,6 +1,7 @@
 import 'dotenv/config'
 import express from 'express'
 import axios from 'axios'
+import Order from '../Models/Order'
 
 const router = express.Router()
 
@@ -36,7 +37,8 @@ http: router.get('/chatbot', (req, res) => {
     res.sendStatus(403)
   }
 })
-// POST Webhooks Chatbot
+
+// TODO: POST /webhooks/chatbot
 router.post('/chatbot', async (req, res) => {
   let form = req.body
 
@@ -66,20 +68,51 @@ router.post('/chatbot', async (req, res) => {
   }
 })
 
-// Handle Message Events
+// ดึงข้อมูลผู้ใช้จาก Graph API
+async function getUserProfile(sender_psid) {
+  try {
+    let response = await axios.get(
+      `https://graph.facebook.com/${sender_psid}`,
+      {
+        params: {
+          access_token: PAGE_ACCESS_TOKEN,
+          fields: 'id,name',
+        },
+      }
+    )
+    return response.data
+  } catch (error) {
+    console.log('Unable to fetch user profile:', error)
+    return null
+  }
+}
+
+//TODO: Handle Message Events
 async function handleMessage(sender_psid, received_message) {
   let response
+
+  // ดึงข้อมูลผู้ใช้จาก Facebook Graph API
+  let userProfile = await getUserProfile(sender_psid)
 
   if (received_message.text) {
     if (
       received_message.text.includes('ออเดอร์') ||
       received_message.text.toLowerCase().includes('order')
     ) {
-      let orderId = '666fae8fd4f0cde928d4ecfa' // Replace with actual order ID or logic to fetch it
-      let orderUrl = `https://weliveapp.netlify.app/order/${orderId}`
+      let orderExisting =
+        Order.findOne({ name: userProfile.name }).exec() ||
+        '668a6ff30a92b373360500eb'
 
-      response = {
-        text: `นี่คือลิงก์ออเดอร์ของคุณ: ${orderUrl}`,
+      let orderUrl = `https://weliveapp.netlify.app/order/${orderExisting._id}`
+
+      if (orderExisting) {
+        response = {
+          text: `สวัสดีคุณ ${userProfile.name} นี่คือลิงก์ออเดอร์ของคุณ: ${orderUrl}`,
+        }
+      } else {
+        response = {
+          text: `ไม่พบออเดอร์ของคุณ ${userProfile.name}`,
+        }
       }
     } else {
       response = {
@@ -120,7 +153,7 @@ async function handleMessage(sender_psid, received_message) {
     }
   }
 
-  // Send the response message
+  // ส่งข้อความ response กลับไปยังผู้ใช้
   await callSendAPI(sender_psid, response)
 }
 
@@ -145,7 +178,7 @@ function handlePostBack(sender_psid, received_postback) {
   callSendAPI(sender_psid, response)
 }
 
-// Send Response Message via the Send API
+// ส่งข้อความไปยัง Messenger API
 export async function callSendAPI(sender_psid, response) {
   // Construct the message body
   let request_body = {

@@ -81,8 +81,6 @@ router.get('/sale-order', getAll)
  *    get:
  *      tags: [Sale Order]
  *      summary: Get Sale Order By ID
- *      security:
- *        - bearerAuth: []
  *      parameters:
  *        - in: path
  *          name: id

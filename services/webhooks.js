@@ -1,7 +1,7 @@
 import 'dotenv/config'
 import express from 'express'
 import axios from 'axios'
-import Order from '../Models/Order'
+import Order from '../Models/Order.js'
 
 const router = express.Router()
 
@@ -99,13 +99,15 @@ async function handleMessage(sender_psid, received_message) {
       received_message.text.includes('ออเดอร์') ||
       received_message.text.toLowerCase().includes('order')
     ) {
-      let orderExisting =
-        Order.findOne({ name: userProfile.name }).exec() ||
-        '668a6ff30a92b373360500eb'
+      // let orderExisting =
+      //   Order.findOne({ name: userProfile.name }).exec() ||
+      //   '668a6ff30a92b373360500eb'
+      // let orderUrl = `https://weliveapp.netlify.app/order/${orderExisting._id}`
 
-      let orderUrl = `https://weliveapp.netlify.app/order/${orderExisting._id}`
+      let orderId = '668a6ff30a92b373360500eb'
+      let orderUrl = `https://weliveapp.netlify.app/order/${orderId}`
 
-      if (orderExisting) {
+      if (userProfile) {
         response = {
           text: `สวัสดีคุณ ${userProfile.name} นี่คือลิงก์ออเดอร์ของคุณ: ${orderUrl}`,
         }

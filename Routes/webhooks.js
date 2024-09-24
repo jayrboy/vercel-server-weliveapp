@@ -8,22 +8,12 @@ const router = express.Router()
 // Define a message verify token (custom)
 const WEBHOOKS_VERIFY_TOKEN = process.env.WEBHOOKS_VERIFY_TOKEN || 'message001'
 const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN
-let received_updates = []
 
 //! Meta เปิด Mode: Live Preview สำหรับ Test
-/*-------------- http://localhost:8000/webhooks --------------*/
+/*-------------- http://localhost:8000/api/webhooks --------------*/
 
-router.get('/', (req, res) => {
-  res
-    .status(200)
-    .send('<pre>' + JSON.stringify(received_updates, null, 2) + '</pre>')
-})
-
-//? http://localhost:8000/webhooks/chatbot
-
-// GET Webhooks Chatbot
-http: router.get('/webhooks/chatbot', (req, res) => {
-  // Parse the query params
+//TODO: GET /api/webhooks/chatbot
+router.get('/webhooks/chatbot', (req, res) => {
   let mode = req.query['hub.mode']
   let verifyToken = req.query['hub.verify_token']
   let challenge = req.query['hub.challenge']
@@ -38,7 +28,7 @@ http: router.get('/webhooks/chatbot', (req, res) => {
   }
 })
 
-// TODO: POST /webhooks/chatbot
+// TODO: POST /api/webhooks/chatbot
 router.post('/webhooks/chatbot', async (req, res) => {
   let form = req.body
 
@@ -46,16 +36,11 @@ router.post('/webhooks/chatbot', async (req, res) => {
     form.entry.forEach((entry) => {
       // Get the body of the webhook event
       let webhook_event = entry.messaging[0]
-      received_updates.unshift(webhook_event)
 
       // Get the sender PSID
       let sender_psid = webhook_event.sender.id
-      console.log(sender_psid)
+      console.log('PSID: ', sender_psid)
 
-      /*  
-        Check if the event is a message or postback and
-        pass the event to thr appropriate handler function
-      */
       if (webhook_event.message) {
         handleMessage(sender_psid, webhook_event.message)
       } else if (webhook_event.postback) {
@@ -66,13 +51,6 @@ router.post('/webhooks/chatbot', async (req, res) => {
   } else {
     res.sendStatus(404) // if event is not from a "page" subscription
   }
-})
-
-router.get('/test', async (req, res) => {
-  let userProfile = await getUserProfile('8161509987227628')
-  let orderExisting = await Order.findOne({ name: userProfile.name }).exec()
-  let orderUrl = `https://weliveapp.netlify.app/order/${orderExisting._id}`
-  res.json({ url: orderUrl })
 })
 
 // ดึงข้อมูลผู้ใช้จาก Graph API
@@ -94,10 +72,8 @@ async function handleMessage(sender_psid, received_message) {
 
   // ดึงข้อมูลผู้ใช้จาก Facebook Graph API
   let userProfile = await getUserProfile(sender_psid)
-
-  // let orderExisting = await Order.findOne({ name: userProfile.name }).exec()
-  // let orderUrl = `https://weliveapp.netlify.app/order/${orderExisting._id}`
-  let orderUrl = `https://weliveapp.netlify.app/order/66f280967c8b429ba446747f`
+  let orderExisting = await Order.findOne({ name: userProfile.name }).exec()
+  let orderUrl = `https://weliveapp.netlify.app/order/${orderExisting._id}`
 
   if (received_message.text) {
     if (

@@ -80,7 +80,6 @@ const port = process.env.PORT || 8000
 const runApp = () => {
   try {
     app.listen(port, () => {
-      connectDB()
       console.log('Server running at http://localhost:%s', port)
     })
   } catch (error) {
@@ -89,4 +88,5 @@ const runApp = () => {
   }
 }
 
+connectDB()
 runApp()

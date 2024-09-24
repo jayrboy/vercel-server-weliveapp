@@ -99,9 +99,7 @@ async function handleMessage(sender_psid, received_message) {
       received_message.text.includes('ออเดอร์') ||
       received_message.text.toLowerCase().includes('order')
     ) {
-      let orderExisting =
-        Order.findOne({ name: userProfile.name }).exec() ||
-        '66f26035ce4676d34f30478b'
+      let orderExisting = await Order.findOne({ name: userProfile.name }).exec()
       let orderUrl = `https://weliveapp.netlify.app/order/${orderExisting._id}`
 
       // let orderId = '668a6ff30a92b373360500eb'

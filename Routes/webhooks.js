@@ -102,7 +102,7 @@ async function handleMessage(sender_psid, received_message) {
       received_message.text.includes('ออเดอร์') ||
       received_message.text.toLowerCase().includes('order')
     ) {
-      if (userProfile) {
+      if (userProfile && orderExisting) {
         response = {
           text: `สวัสดีคุณ ${userProfile.name} นี่คือลิงก์ออเดอร์ของคุณ: ${orderUrl}`,
         }

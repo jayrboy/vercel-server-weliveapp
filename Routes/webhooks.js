@@ -22,7 +22,7 @@ router.get('/', (req, res) => {
 //? http://localhost:8000/webhooks/chatbot
 
 // GET Webhooks Chatbot
-http: router.get('/chatbot', (req, res) => {
+http: router.get('/webhooks/chatbot', (req, res) => {
   // Parse the query params
   let mode = req.query['hub.mode']
   let verifyToken = req.query['hub.verify_token']
@@ -39,7 +39,7 @@ http: router.get('/chatbot', (req, res) => {
 })
 
 // TODO: POST /webhooks/chatbot
-router.post('/chatbot', async (req, res) => {
+router.post('/webhooks/chatbot', async (req, res) => {
   let form = req.body
 
   if (form.object === 'page') {
@@ -67,6 +67,11 @@ router.post('/chatbot', async (req, res) => {
     res.sendStatus(404) // if event is not from a "page" subscription
   }
 })
+
+// router.get('/test', async (req, res) => {
+//   let orderExisting = await Order.findOne({ name: 'Jay Jakkrit' }).exec()
+//   res.json(orderExisting)
+// })
 
 // ดึงข้อมูลผู้ใช้จาก Graph API
 async function getUserProfile(sender_psid) {

@@ -11,7 +11,7 @@ import swaggerUi from 'swagger-ui-express'
 import morgan from 'morgan'
 import cookieParser from 'cookie-parser'
 
-import webhooks from './services/webhooks.js'
+// import webhooks from './services/webhooks.js'
 
 const app = express()
 
@@ -60,7 +60,8 @@ if (process.env.NODE_ENV != 'production') {
     res.status(200).send(`<h1>${os.hostname()}</h1>`)
   })
 }
-app.use('/webhooks', webhooks)
+
+// app.use('/webhooks', webhooks)
 
 /* --- API Endpoints --- */
 const files = fs.readdirSync('./Routes')
@@ -79,13 +80,13 @@ const port = process.env.PORT || 8000
 const runApp = () => {
   try {
     app.listen(port, () => {
+      connectDB()
       console.log('Server running at http://localhost:%s', port)
     })
   } catch (error) {
-    console.log(error)
+    console.log('Error starting server:', error)
     process.exit(1)
   }
 }
 
 runApp()
-connectDB()

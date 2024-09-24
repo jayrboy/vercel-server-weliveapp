@@ -69,15 +69,17 @@ router.post('/webhooks/chatbot', async (req, res) => {
 })
 
 // router.get('/test', async (req, res) => {
-//   let orderExisting = await Order.findOne({ name: 'Jay Jakkrit' }).exec()
-//   res.json(orderExisting)
+//   let userProfile = await getUserProfile('8161509987227628')
+//   let orderExisting = await Order.findOne({ name: userProfile.name }).exec()
+//   let orderUrl = `https://weliveapp.netlify.app/order/${orderExisting._id}`
+//   res.json({ url: orderUrl })
 // })
 
 // ดึงข้อมูลผู้ใช้จาก Graph API
 async function getUserProfile(sender_psid) {
   try {
     let response = await axios.get(
-      `https://graph.facebook.com/${sender_psid}?fields=id,name&access_token=${PAGE_ACCESS_TOKEN}`
+      `https://graph.facebook.com/${sender_psid}?fields=name&access_token=${PAGE_ACCESS_TOKEN}`
     )
     return response.data
   } catch (error) {
@@ -92,19 +94,15 @@ async function handleMessage(sender_psid, received_message) {
 
   // ดึงข้อมูลผู้ใช้จาก Facebook Graph API
   let userProfile = await getUserProfile(sender_psid)
+  let orderExisting = await Order.findOne({ name: userProfile.name }).exec()
+  let orderUrl = `https://weliveapp.netlify.app/order/${orderExisting._id}`
 
   if (received_message.text) {
     if (
       received_message.text.includes('ออเดอร์') ||
       received_message.text.toLowerCase().includes('order')
     ) {
-      let orderExisting = await Order.findOne({ name: userProfile.name }).exec()
-      // let orderId = '668a6ff30a92b373360500eb'
-
-      if (userProfile && orderExisting) {
-        console.log('Order Existing')
-        let orderUrl = `https://weliveapp.netlify.app/order/${orderExisting._id}`
-
+      if (userProfile) {
         response = {
           text: `สวัสดีคุณ ${userProfile.name} นี่คือลิงก์ออเดอร์ของคุณ: ${orderUrl}`,
         }

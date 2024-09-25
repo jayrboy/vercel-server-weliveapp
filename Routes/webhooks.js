@@ -58,11 +58,11 @@ async function handleMessage(sender_psid, received_message) {
 
   try {
     // ดึงชื่อผู้ใช้จาก PSID
-    const userProfileName = await getUserProfileName(sender_psid)
+    const userProfile = await getUserProfileName(sender_psid)
 
     // ค้นหาออเดอร์ของผู้ใช้ใน MongoDB
-    const userProfile = { name: userProfileName }
-    const order = await findOrderByName(userProfile)
+    const userProfileName = userProfile.name
+    const order = await findOrderByName(userProfileName)
     // กรณีที่ผู้ใช้ส่งข้อความปกติ
     if (received_message.text) {
       if (order) {
@@ -128,7 +128,7 @@ async function handleMessage(sender_psid, received_message) {
   console.log(response)
 
   // ส่งข้อความ response กลับไปยังผู้ใช้
-  // callSendAPI(sender_psid, response)
+  callSendAPI(sender_psid, response)
 }
 
 // Handle "messaging_postback" Events
@@ -188,9 +188,9 @@ async function getUserProfileName(psid) {
   }
 }
 
-async function findOrderByName(userProfile) {
+async function findOrderByName(userProfileName) {
   try {
-    const order = await Order.findOne({ name: userProfile.name }).exec()
+    const order = await Order.findOne({ name: userProfileName }).exec()
     if (order) {
       console.log('Order found:', order)
       return order

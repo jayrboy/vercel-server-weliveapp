@@ -8,6 +8,13 @@ const router = express.Router()
 // Define a message verify token (custom)
 const WEBHOOKS_VERIFY_TOKEN = process.env.WEBHOOKS_VERIFY_TOKEN || 'message001'
 const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN
+let received_updates = []
+
+router.get('/', (req, res) => {
+  res
+    .status(200)
+    .send('<pre>' + JSON.stringify(received_updates, null, 2) + '</pre>')
+})
 
 //! Meta เปิด Mode: Live Preview สำหรับ Test
 
@@ -30,12 +37,12 @@ router.get('/chatbot', (req, res) => {
 // POST: /api/webhooks/chatbot
 router.post('/chatbot', async (req, res) => {
   let form = req.body
-  console.log('Messaging: ', form.entry[0].messaging)
 
   if (form.object === 'page') {
     form.entry.forEach((entry) => {
       // Get the body of the webhook event
       let webhook_event = entry.messaging[0]
+      received_updates.unshift(webhook_event)
 
       // Get the sender PSID
       let sender_psid = webhook_event.sender.id

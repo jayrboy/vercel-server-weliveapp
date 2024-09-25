@@ -10,9 +10,8 @@ const WEBHOOKS_VERIFY_TOKEN = process.env.WEBHOOKS_VERIFY_TOKEN || 'message001'
 const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN
 
 //! Meta เปิด Mode: Live Preview สำหรับ Test
-/*-------------- http://localhost:8000/api/webhooks --------------*/
 
-//TODO: GET /api/webhooks/chatbot
+// GET: /api/webhooks/chatbot
 router.get('/webhooks/chatbot', (req, res) => {
   let mode = req.query['hub.mode']
   let verifyToken = req.query['hub.verify_token']
@@ -28,7 +27,7 @@ router.get('/webhooks/chatbot', (req, res) => {
   }
 })
 
-// TODO: POST /api/webhooks/chatbot
+// POST: /api/webhooks/chatbot
 router.post('/webhooks/chatbot', async (req, res) => {
   let form = req.body
 
@@ -53,83 +52,83 @@ router.post('/webhooks/chatbot', async (req, res) => {
   }
 })
 
-// ดึงข้อมูลผู้ใช้จาก Graph API
-async function getUserProfile(sender_psid) {
-  try {
-    let response = await axios.get(
-      `https://graph.facebook.com/${sender_psid}?fields=name&access_token=${PAGE_ACCESS_TOKEN}`
-    )
-    return response.data
-  } catch (error) {
-    console.log('Unable to fetch user profile:', error)
-    return null
-  }
-}
-
 //TODO: Handle Message Events
 async function handleMessage(sender_psid, received_message) {
   let response
 
-  // ดึงข้อมูลผู้ใช้จาก Facebook Graph API
-  let userProfile = await getUserProfile(sender_psid)
-  let orderExisting = await Order.findOne({ name: userProfile.name }).exec()
-  let orderUrl = `https://weliveapp.netlify.app/order/${orderExisting._id}`
+  try {
+    // ดึงชื่อผู้ใช้จาก PSID
+    const userProfileName = await getUserProfileName(sender_psid)
 
-  if (received_message.text) {
-    if (
-      received_message.text.includes('ออเดอร์') ||
-      received_message.text.toLowerCase().includes('order')
-    ) {
-      if (userProfile) {
+    // ค้นหาออเดอร์ของผู้ใช้ใน MongoDB
+    const userProfile = { name: userProfileName }
+    const order = await findOrderByName(userProfile)
+    // กรณีที่ผู้ใช้ส่งข้อความปกติ
+    if (received_message.text) {
+      if (order) {
         response = {
-          text: `สวัสดีคุณ ${userProfile.name} นี่คือลิงก์ออเดอร์ของคุณ: ${orderUrl}`,
+          text: `สวัสดีคุณ ${order.name} คุณมีคำสั่งซื้อ. หากต้องการรายละเอียดเพิ่มเติมกรุณาเข้าลิงก์: https://weliveapp.netlify.app/order/${order._id}`,
         }
       } else {
         response = {
-          text: `ไม่พบออเดอร์ของคุณ ${userProfile.name}`,
+          text: `ไม่พบคำสั่งซื้อในระบบสำหรับชื่อ "${userProfileName}".`,
         }
       }
-    } else {
-      response = {
-        text: `คุณส่งข้อความ "${received_message.text}" มา กรุณาส่งรูปภาพสินค้าที่ต้องการ หรือพิมพ์ "order" เพื่อดูคำสั่งซื้อของคุณลูกค้า`,
-      }
     }
-  } else if (received_message.attachments) {
-    // Get the URL of the message attachment
-    let attachment_url = received_message.attachments[0].payload.url
+    // กรณีที่ผู้ใช้ส่งรูปภาพ
+    else if (received_message.attachments) {
+      // Get the URL of the message attachment
+      let attachment_url = received_message.attachments[0].payload.url
 
-    // Respond with a generic template asking for confirmation
-    response = {
-      attachment: {
-        type: 'template',
-        payload: {
-          template_type: 'generic',
-          elements: [
-            {
-              title: 'นี่คือสินค้าที่ต้องการใช่หรือไม่?',
-              subtitle: 'กดปุ่มเพื่อตอบคำถาม',
-              image_url: attachment_url,
-              buttons: [
+      if (order) {
+        // Respond with a generic template showing the order URL and asking for confirmation
+        response = {
+          attachment: {
+            type: 'template',
+            payload: {
+              template_type: 'generic',
+              elements: [
                 {
-                  type: 'postback',
-                  title: 'ใช่!',
-                  payload: 'yes',
-                },
-                {
-                  type: 'postback',
-                  title: 'ไม่!',
-                  payload: 'no',
+                  title: `คุณ ${order.name} มีคำสั่งซื้อ`,
+                  subtitle: `คลิกลิงก์เพื่อตรวจสอบคำสั่งซื้อเพิ่มเติม`,
+                  image_url: attachment_url, // รูปภาพที่ผู้ใช้ส่งมา
+                  buttons: [
+                    {
+                      type: 'web_url',
+                      url: `https://weliveapp.netlify.app/order/${order._id}`,
+                      title: 'ดูรายละเอียดคำสั่งซื้อ',
+                    },
+                    {
+                      type: 'postback',
+                      title: 'ใช่! นี่คือสินค้าที่ต้องการ',
+                      payload: 'yes',
+                    },
+                    {
+                      type: 'postback',
+                      title: 'ไม่! สินค้านี้ไม่ถูกต้อง',
+                      payload: 'no',
+                    },
+                  ],
                 },
               ],
             },
-          ],
-        },
-      },
+          },
+        }
+      } else {
+        response = {
+          text: `ไม่พบคำสั่งซื้อในระบบสำหรับชื่อ "${userProfileName}".`,
+        }
+      }
+    }
+  } catch (error) {
+    response = {
+      text: 'ขออภัย เกิดข้อผิดพลาดในการดึงข้อมูลคำสั่งซื้อของคุณ กรุณาลองใหม่อีกครั้ง',
     }
   }
+  console.log(response)
 
   // ส่งข้อความ response กลับไปยังผู้ใช้
-  await callSendAPI(sender_psid, response)
+  // callSendAPI(sender_psid, response)
 }
 
 // Handle "messaging_postback" Events
@@ -154,7 +153,7 @@ function handlePostBack(sender_psid, received_postback) {
 }
 
 // ส่งข้อความไปยัง Messenger API
-export async function callSendAPI(sender_psid, response) {
+function callSendAPI(sender_psid, response) {
   // Construct the message body
   let request_body = {
     recipient: {
@@ -162,20 +161,46 @@ export async function callSendAPI(sender_psid, response) {
     },
     message: response,
   }
+
   // Send the HTTP request to the Messenger Platform
   try {
-    await axios.post(
-      'https://graph.facebook.com/v20.0/me/messages',
-      request_body,
-      {
-        params: {
-          access_token: PAGE_ACCESS_TOKEN,
-        },
-      }
-    )
+    axios.post('https://graph.facebook.com/v20.0/me/messages', request_body, {
+      params: {
+        access_token: PAGE_ACCESS_TOKEN,
+      },
+    })
     console.log('Message sent!')
   } catch (error) {
     console.log('Unable to send message')
+  }
+}
+
+// ดึงข้อมูลผู้ใช้จาก Graph API
+async function getUserProfileName(psid) {
+  try {
+    let response = await axios.get(
+      `https://graph.facebook.com/${psid}?fields=name&access_token=${PAGE_ACCESS_TOKEN}`
+    )
+    return response.data
+  } catch (error) {
+    console.error('Error fetching user profile:', error)
+    throw new Error('Unable to fetch user profile')
+  }
+}
+
+async function findOrderByName(userProfile) {
+  try {
+    const order = await Order.findOne({ name: userProfile.name }).exec()
+    if (order) {
+      console.log('Order found:', order)
+      return order
+    } else {
+      console.log('No order found for this user')
+      return null
+    }
+  } catch (error) {
+    console.error('Error fetching order:', error)
+    throw new Error('Unable to fetch order')
   }
 }
 

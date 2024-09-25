@@ -30,6 +30,7 @@ router.get('/webhooks/chatbot', (req, res) => {
 // POST: /api/webhooks/chatbot
 router.post('/webhooks/chatbot', async (req, res) => {
   let form = req.body
+  console.log('Form Body: ', form)
 
   if (form.object === 'page') {
     form.entry.forEach((entry) => {
@@ -61,8 +62,7 @@ async function handleMessage(sender_psid, received_message) {
     const userProfile = await getUserProfileName(sender_psid)
 
     // ค้นหาออเดอร์ของผู้ใช้ใน MongoDB
-    const userProfileName = userProfile.name
-    const order = await findOrderByName(userProfileName)
+    const order = await findOrderByName(userProfile)
     // กรณีที่ผู้ใช้ส่งข้อความปกติ
     if (received_message.text) {
       if (order) {
@@ -71,7 +71,7 @@ async function handleMessage(sender_psid, received_message) {
         }
       } else {
         response = {
-          text: `ไม่พบคำสั่งซื้อในระบบสำหรับชื่อ "${userProfileName}".`,
+          text: `ไม่พบคำสั่งซื้อสำหรับคุณ ${userProfile.name} รอติดตามการถ่ายทอดสดขายสินค้าและสั่งสินค้าอีดครั้ง`,
         }
       }
     }
@@ -116,7 +116,7 @@ async function handleMessage(sender_psid, received_message) {
         }
       } else {
         response = {
-          text: `ไม่พบคำสั่งซื้อในระบบสำหรับชื่อ "${userProfileName}".`,
+          text: `ไม่พบคำสั่งซื้อในระบบสำหรับชื่อ "${userProfile.name}".`,
         }
       }
     }
@@ -125,10 +125,9 @@ async function handleMessage(sender_psid, received_message) {
       text: 'ขออภัย เกิดข้อผิดพลาดในการดึงข้อมูลคำสั่งซื้อของคุณ กรุณาลองใหม่อีกครั้ง',
     }
   }
-  console.log(response)
 
   // ส่งข้อความ response กลับไปยังผู้ใช้
-  callSendAPI(sender_psid, response)
+  await callSendAPI(sender_psid, response)
 }
 
 // Handle "messaging_postback" Events
@@ -153,7 +152,7 @@ function handlePostBack(sender_psid, received_postback) {
 }
 
 // ส่งข้อความไปยัง Messenger API
-function callSendAPI(sender_psid, response) {
+async function callSendAPI(sender_psid, response) {
   // Construct the message body
   let request_body = {
     recipient: {
@@ -164,11 +163,15 @@ function callSendAPI(sender_psid, response) {
 
   // Send the HTTP request to the Messenger Platform
   try {
-    axios.post('https://graph.facebook.com/v20.0/me/messages', request_body, {
-      params: {
-        access_token: PAGE_ACCESS_TOKEN,
-      },
-    })
+    await axios.post(
+      'https://graph.facebook.com/v20.0/me/messages',
+      request_body,
+      {
+        params: {
+          access_token: PAGE_ACCESS_TOKEN,
+        },
+      }
+    )
     console.log('Message sent!')
   } catch (error) {
     console.log('Unable to send message')
@@ -179,7 +182,7 @@ function callSendAPI(sender_psid, response) {
 async function getUserProfileName(psid) {
   try {
     let response = await axios.get(
-      `https://graph.facebook.com/${psid}?fields=name&access_token=${PAGE_ACCESS_TOKEN}`
+      `https://graph.facebook.com/${psid}?fields=id,name&access_token=${PAGE_ACCESS_TOKEN}`
     )
     return response.data
   } catch (error) {
@@ -188,14 +191,12 @@ async function getUserProfileName(psid) {
   }
 }
 
-async function findOrderByName(userProfileName) {
+async function findOrderByName(userProfile) {
   try {
-    const order = await Order.findOne({ name: userProfileName }).exec()
+    const order = await Order.findOne({ name: userProfile.name }).exec()
     if (order) {
-      console.log('Order found:', order)
       return order
     } else {
-      console.log('No order found for this user')
       return null
     }
   } catch (error) {

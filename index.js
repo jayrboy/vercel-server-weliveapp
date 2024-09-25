@@ -11,7 +11,7 @@ import swaggerUi from 'swagger-ui-express'
 import morgan from 'morgan'
 import cookieParser from 'cookie-parser'
 
-// import webhooks from './services/webhooks.js'
+import webhooks from './services/webhooks.js'
 
 const app = express()
 
@@ -61,7 +61,7 @@ if (process.env.NODE_ENV != 'production') {
   })
 }
 
-// app.use('/webhooks', webhooks)
+app.use('/webhooks', webhooks)
 
 /* --- API Endpoints --- */
 const files = fs.readdirSync('./Routes')

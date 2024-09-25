@@ -5,10 +5,7 @@ import mongoose from 'mongoose'
 
 const connectDB = () =>
   mongoose
-    .connect(process.env.MONGODB_URL, {
-      connectTimeoutMS: 10000, // Timeout 10 วินาที
-      socketTimeoutMS: 45000, // Timeout 45 วินาทีสำหรับการเชื่อมต่อ
-    })
+    .connect(process.env.MONGODB_URL)
     .then(() => console.log('MongoDB Connected!'))
     .catch((e) => console.log({ message: 'Failed connection: ' + e }))
 

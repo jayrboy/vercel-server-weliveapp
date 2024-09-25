@@ -12,7 +12,7 @@ const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN
 //! Meta เปิด Mode: Live Preview สำหรับ Test
 
 // GET: /api/webhooks/chatbot
-router.get('/webhooks/chatbot', (req, res) => {
+router.get('/chatbot', (req, res) => {
   let mode = req.query['hub.mode']
   let verifyToken = req.query['hub.verify_token']
   let challenge = req.query['hub.challenge']
@@ -28,12 +28,12 @@ router.get('/webhooks/chatbot', (req, res) => {
 })
 
 // POST: /api/webhooks/chatbot
-router.post('/webhooks/chatbot', async (req, res) => {
+router.post('/chatbot', async (req, res) => {
   let form = req.body
   console.log('Messaging: ', form.entry[0].messaging)
 
   if (form.object === 'page') {
-    form.entry.forEach(async (entry) => {
+    form.entry.forEach((entry) => {
       // Get the body of the webhook event
       let webhook_event = entry.messaging[0]
 
@@ -42,9 +42,9 @@ router.post('/webhooks/chatbot', async (req, res) => {
       console.log('PSID: ', sender_psid)
 
       if (webhook_event.message) {
-        await handleMessage(sender_psid, webhook_event.message)
+        handleMessage(sender_psid, webhook_event.message)
       } else if (webhook_event.postback) {
-        await handlePostBack(sender_psid, webhook_event.postback)
+        handlePostBack(sender_psid, webhook_event.postback)
       }
     })
     res.status(200).send('EVENT_RECEIVED')
@@ -60,9 +60,9 @@ async function handleMessage(sender_psid, received_message) {
   try {
     // ดึงชื่อผู้ใช้จาก PSID
     const userProfile = await getUserProfileName(sender_psid)
-
     // ค้นหาออเดอร์ของผู้ใช้ใน MongoDB
     const order = await findOrderByName(userProfile)
+
     // กรณีที่ผู้ใช้ส่งข้อความปกติ
     if (received_message.text) {
       if (order) {
@@ -127,7 +127,7 @@ async function handleMessage(sender_psid, received_message) {
   }
 
   // ส่งข้อความ response กลับไปยังผู้ใช้
-  await callSendAPI(sender_psid, response)
+  callSendAPI(sender_psid, response)
 }
 
 // Handle "messaging_postback" Events
@@ -152,7 +152,7 @@ function handlePostBack(sender_psid, received_postback) {
 }
 
 // ส่งข้อความไปยัง Messenger API
-async function callSendAPI(sender_psid, response) {
+function callSendAPI(sender_psid, response) {
   // Construct the message body
   let request_body = {
     recipient: {
@@ -163,15 +163,11 @@ async function callSendAPI(sender_psid, response) {
 
   // Send the HTTP request to the Messenger Platform
   try {
-    await axios.post(
-      'https://graph.facebook.com/v20.0/me/messages',
-      request_body,
-      {
-        params: {
-          access_token: PAGE_ACCESS_TOKEN,
-        },
-      }
-    )
+    axios.post('https://graph.facebook.com/v20.0/me/messages', request_body, {
+      params: {
+        access_token: PAGE_ACCESS_TOKEN,
+      },
+    })
     console.log('Message sent!')
   } catch (error) {
     console.log('Unable to send message')

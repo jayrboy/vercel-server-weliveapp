@@ -67,76 +67,76 @@ async function handleMessage(sender_psid, received_message) {
   try {
     // ดึงชื่อผู้ใช้จาก PSID
     const userProfile = await getUserProfileName(sender_psid)
-    // ค้นหาออเดอร์ของผู้ใช้ใน MongoDB
-    await Order.findOne({ name: userProfile.name })
-      .exec()
-      .then((order) => {
-        // กรณีที่ผู้ใช้ส่งข้อความปกติ
-        if (received_message.text) {
-          if (order) {
-            response = {
-              text: `สวัสดีคุณ ${order.name} คุณมีคำสั่งซื้อ. หากต้องการรายละเอียดเพิ่มเติมกรุณาเข้าลิงก์: https://weliveapp.netlify.app/order/${order._id}`,
-            }
-          } else {
-            response = {
-              text: `ไม่พบคำสั่งซื้อสำหรับคุณ ${userProfile.name} รอติดตามการถ่ายทอดสดขายสินค้าและสั่งสินค้าอีดครั้ง`,
-            }
-          }
-        }
-        // กรณีที่ผู้ใช้ส่งรูปภาพ
-        else if (received_message.attachments) {
-          // Get the URL of the message attachment
-          let attachment_url = received_message.attachments[0].payload.url
 
-          if (order) {
-            // Respond with a generic template showing the order URL and asking for confirmation
-            response = {
-              attachment: {
-                type: 'template',
-                payload: {
-                  template_type: 'generic',
-                  elements: [
+    // ค้นหาออเดอร์ของผู้ใช้ใน MongoDB
+    const order = await Order.findOne({ name: userProfile.name }).exec()
+
+    // กรณีที่ผู้ใช้ส่งข้อความปกติ
+    if (received_message.text) {
+      if (order) {
+        response = {
+          text: `สวัสดีคุณ ${order.name} คุณมีคำสั่งซื้อ. หากต้องการรายละเอียดเพิ่มเติมกรุณาเข้าลิงก์: https://weliveapp.netlify.app/order/${order._id}`,
+        }
+      } else {
+        response = {
+          text: `ไม่พบคำสั่งซื้อสำหรับคุณ ${userProfile.name} รอติดตามการถ่ายทอดสดขายสินค้าและสั่งสินค้าอีกครั้ง`,
+        }
+      }
+    }
+    // กรณีที่ผู้ใช้ส่งรูปภาพ
+    else if (received_message.attachments) {
+      // Get the URL of the message attachment
+      let attachment_url = received_message.attachments[0].payload.url
+
+      if (order) {
+        // Respond with a generic template showing the order URL and asking for confirmation
+        response = {
+          attachment: {
+            type: 'template',
+            payload: {
+              template_type: 'generic',
+              elements: [
+                {
+                  title: `คุณ ${order.name} มีคำสั่งซื้อ`,
+                  subtitle: `คลิกลิงก์เพื่อตรวจสอบคำสั่งซื้อเพิ่มเติม`,
+                  image_url: attachment_url, // รูปภาพที่ผู้ใช้ส่งมา
+                  buttons: [
                     {
-                      title: `คุณ ${order.name} มีคำสั่งซื้อ`,
-                      subtitle: `คลิกลิงก์เพื่อตรวจสอบคำสั่งซื้อเพิ่มเติม`,
-                      image_url: attachment_url, // รูปภาพที่ผู้ใช้ส่งมา
-                      buttons: [
-                        {
-                          type: 'web_url',
-                          url: `https://weliveapp.netlify.app/order/${order._id}`,
-                          title: 'ดูรายละเอียดคำสั่งซื้อ',
-                        },
-                        {
-                          type: 'postback',
-                          title: 'ใช่! นี่คือสินค้าที่ต้องการ',
-                          payload: 'yes',
-                        },
-                        {
-                          type: 'postback',
-                          title: 'ไม่! สินค้านี้ไม่ถูกต้อง',
-                          payload: 'no',
-                        },
-                      ],
+                      type: 'web_url',
+                      url: `https://weliveapp.netlify.app/order/${order._id}`,
+                      title: 'ดูรายละเอียดคำสั่งซื้อ',
+                    },
+                    {
+                      type: 'postback',
+                      title: 'ใช่! นี่คือสินค้าที่ต้องการ',
+                      payload: 'yes',
+                    },
+                    {
+                      type: 'postback',
+                      title: 'ไม่! สินค้านี้ไม่ถูกต้อง',
+                      payload: 'no',
                     },
                   ],
                 },
-              },
-            }
-          } else {
-            response = {
-              text: `ไม่พบคำสั่งซื้อในระบบสำหรับชื่อ "${userProfile.name}".`,
-            }
-          }
+              ],
+            },
+          },
         }
-      })
+      } else {
+        response = {
+          text: `ไม่พบคำสั่งซื้อในระบบสำหรับชื่อ "${userProfile.name}".`,
+        }
+      }
+    }
   } catch (error) {
+    console.error('Error handling message:', error) // เพิ่มการ log ข้อผิดพลาด
     response = {
       text: 'ขออภัย เกิดข้อผิดพลาดในการดึงข้อมูลคำสั่งซื้อของคุณ กรุณาลองใหม่อีกครั้ง',
     }
   }
 
   // ส่งข้อความ response กลับไปยังผู้ใช้
-  callSendAPI(sender_psid, response)
+  await callSendAPI(sender_psid, response) // ใช้ await เพื่อรอการส่ง API สำเร็จ
 }
 
 // Handle "messaging_postback" Events

@@ -35,7 +35,7 @@ router.get('/chatbot', (req, res) => {
 })
 
 // POST: /api/webhooks/chatbot
-router.post('/chatbot', async (req, res) => {
+router.post('/chatbot', (req, res) => {
   let form = req.body
 
   if (form.object === 'page') {
@@ -68,65 +68,67 @@ async function handleMessage(sender_psid, received_message) {
     // ดึงชื่อผู้ใช้จาก PSID
     const userProfile = await getUserProfileName(sender_psid)
     // ค้นหาออเดอร์ของผู้ใช้ใน MongoDB
-    const order = await findOrderByName(userProfile)
-
-    // กรณีที่ผู้ใช้ส่งข้อความปกติ
-    if (received_message.text) {
-      if (order) {
-        response = {
-          text: `สวัสดีคุณ ${order.name} คุณมีคำสั่งซื้อ. หากต้องการรายละเอียดเพิ่มเติมกรุณาเข้าลิงก์: https://weliveapp.netlify.app/order/${order._id}`,
+    await Order.findOne({ name: userProfile.name })
+      .exec()
+      .then((order) => {
+        // กรณีที่ผู้ใช้ส่งข้อความปกติ
+        if (received_message.text) {
+          if (order) {
+            response = {
+              text: `สวัสดีคุณ ${order.name} คุณมีคำสั่งซื้อ. หากต้องการรายละเอียดเพิ่มเติมกรุณาเข้าลิงก์: https://weliveapp.netlify.app/order/${order._id}`,
+            }
+          } else {
+            response = {
+              text: `ไม่พบคำสั่งซื้อสำหรับคุณ ${userProfile.name} รอติดตามการถ่ายทอดสดขายสินค้าและสั่งสินค้าอีดครั้ง`,
+            }
+          }
         }
-      } else {
-        response = {
-          text: `ไม่พบคำสั่งซื้อสำหรับคุณ ${userProfile.name} รอติดตามการถ่ายทอดสดขายสินค้าและสั่งสินค้าอีดครั้ง`,
-        }
-      }
-    }
-    // กรณีที่ผู้ใช้ส่งรูปภาพ
-    else if (received_message.attachments) {
-      // Get the URL of the message attachment
-      let attachment_url = received_message.attachments[0].payload.url
+        // กรณีที่ผู้ใช้ส่งรูปภาพ
+        else if (received_message.attachments) {
+          // Get the URL of the message attachment
+          let attachment_url = received_message.attachments[0].payload.url
 
-      if (order) {
-        // Respond with a generic template showing the order URL and asking for confirmation
-        response = {
-          attachment: {
-            type: 'template',
-            payload: {
-              template_type: 'generic',
-              elements: [
-                {
-                  title: `คุณ ${order.name} มีคำสั่งซื้อ`,
-                  subtitle: `คลิกลิงก์เพื่อตรวจสอบคำสั่งซื้อเพิ่มเติม`,
-                  image_url: attachment_url, // รูปภาพที่ผู้ใช้ส่งมา
-                  buttons: [
+          if (order) {
+            // Respond with a generic template showing the order URL and asking for confirmation
+            response = {
+              attachment: {
+                type: 'template',
+                payload: {
+                  template_type: 'generic',
+                  elements: [
                     {
-                      type: 'web_url',
-                      url: `https://weliveapp.netlify.app/order/${order._id}`,
-                      title: 'ดูรายละเอียดคำสั่งซื้อ',
-                    },
-                    {
-                      type: 'postback',
-                      title: 'ใช่! นี่คือสินค้าที่ต้องการ',
-                      payload: 'yes',
-                    },
-                    {
-                      type: 'postback',
-                      title: 'ไม่! สินค้านี้ไม่ถูกต้อง',
-                      payload: 'no',
+                      title: `คุณ ${order.name} มีคำสั่งซื้อ`,
+                      subtitle: `คลิกลิงก์เพื่อตรวจสอบคำสั่งซื้อเพิ่มเติม`,
+                      image_url: attachment_url, // รูปภาพที่ผู้ใช้ส่งมา
+                      buttons: [
+                        {
+                          type: 'web_url',
+                          url: `https://weliveapp.netlify.app/order/${order._id}`,
+                          title: 'ดูรายละเอียดคำสั่งซื้อ',
+                        },
+                        {
+                          type: 'postback',
+                          title: 'ใช่! นี่คือสินค้าที่ต้องการ',
+                          payload: 'yes',
+                        },
+                        {
+                          type: 'postback',
+                          title: 'ไม่! สินค้านี้ไม่ถูกต้อง',
+                          payload: 'no',
+                        },
+                      ],
                     },
                   ],
                 },
-              ],
-            },
-          },
+              },
+            }
+          } else {
+            response = {
+              text: `ไม่พบคำสั่งซื้อในระบบสำหรับชื่อ "${userProfile.name}".`,
+            }
+          }
         }
-      } else {
-        response = {
-          text: `ไม่พบคำสั่งซื้อในระบบสำหรับชื่อ "${userProfile.name}".`,
-        }
-      }
-    }
+      })
   } catch (error) {
     response = {
       text: 'ขออภัย เกิดข้อผิดพลาดในการดึงข้อมูลคำสั่งซื้อของคุณ กรุณาลองใหม่อีกครั้ง',
@@ -159,7 +161,7 @@ function handlePostBack(sender_psid, received_postback) {
 }
 
 // ส่งข้อความไปยัง Messenger API
-function callSendAPI(sender_psid, response) {
+async function callSendAPI(sender_psid, response) {
   // Construct the message body
   let request_body = {
     recipient: {
@@ -170,11 +172,15 @@ function callSendAPI(sender_psid, response) {
 
   // Send the HTTP request to the Messenger Platform
   try {
-    axios.post('https://graph.facebook.com/v20.0/me/messages', request_body, {
-      params: {
-        access_token: PAGE_ACCESS_TOKEN,
-      },
-    })
+    await axios.post(
+      'https://graph.facebook.com/v19.0/me/messages',
+      request_body,
+      {
+        params: {
+          access_token: PAGE_ACCESS_TOKEN,
+        },
+      }
+    )
     console.log('Message sent!')
   } catch (error) {
     console.log('Unable to send message')
@@ -191,20 +197,6 @@ async function getUserProfileName(psid) {
   } catch (error) {
     console.error('Error fetching user profile:', error)
     throw new Error('Unable to fetch user profile')
-  }
-}
-
-async function findOrderByName(userProfile) {
-  try {
-    const order = await Order.findOne({ name: userProfile.name }).exec()
-    if (order) {
-      return order
-    } else {
-      return null
-    }
-  } catch (error) {
-    console.error('Error fetching order:', error)
-    throw new Error('Unable to fetch order')
   }
 }
 

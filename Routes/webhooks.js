@@ -30,10 +30,10 @@ router.get('/webhooks/chatbot', (req, res) => {
 // POST: /api/webhooks/chatbot
 router.post('/webhooks/chatbot', async (req, res) => {
   let form = req.body
-  console.log('Form Body: ', form)
+  console.log('Messaging: ', form.entry[0].messaging)
 
   if (form.object === 'page') {
-    form.entry.forEach((entry) => {
+    form.entry.forEach(async (entry) => {
       // Get the body of the webhook event
       let webhook_event = entry.messaging[0]
 
@@ -42,9 +42,9 @@ router.post('/webhooks/chatbot', async (req, res) => {
       console.log('PSID: ', sender_psid)
 
       if (webhook_event.message) {
-        handleMessage(sender_psid, webhook_event.message)
+        await handleMessage(sender_psid, webhook_event.message)
       } else if (webhook_event.postback) {
-        handlePostBack(sender_psid, webhook_event.postback)
+        await handlePostBack(sender_psid, webhook_event.postback)
       }
     })
     res.status(200).send('EVENT_RECEIVED')
